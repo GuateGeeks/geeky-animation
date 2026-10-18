@@ -83,11 +83,15 @@ Each frame the brain layers, in order:
 2. **Mood:** a persistent expression (brows, lids, pupil size, blush).
 3. **Action:** keyframe tracks and windows written onto a neutral pose: anticipation before big moves, overshoot after, squash and stretch on contact.
 4. **Cross-fade:** the outgoing action keeps playing while it blends out (default 0.24 s).
-5. **Secondary physics:** springs make the lenses lag body acceleration, the frames swing like a pendulum when carried, brows bounce, and pokes squish.
+5. **Secondary physics:** springs make the lenses lag body acceleration, the frames swing like a pendulum when carried by hand, brows bounce, and pokes squish. The assistant's own flights skip the pendulum and just glide.
 6. **Gaze:** saccades at rest; pursuit with second-order dynamics when tracking. The eyes lead and the head follows. Each eye aims separately, so near targets make it cross-eyed.
 7. **Blinks:** random intervals, occasional doubles, a few milliseconds of left/right lag, extra blinks on big glances.
 
-Pose channels include `body` (x, y, z, rot, sx, sy, turn, tilt), per-lens transforms plus wheel `spin`, detachable eyeballs, pupils (offset, size, heart, spiral), lids (top, bottom, tilt, crease curvature), brows, temple arms (extension, angle, hook bend, reach toward the viewer, fold), bridge (sag, coil), blush, props and particles. `turn` and `tilt` are true yaw and pitch in 3-D and foreshortening in 2-D. Positive tilt brings the bottom edge toward the viewer.
+Pose channels include `body` (x, y, z, rot, sx, sy, turn, tilt), per-lens transforms plus wheel `spin`, detachable eyeballs, pupils (offset, size, heart, spiral), lids (top, bottom, tilt, crease curvature), brows, temple arms (extension, angle, hook bend, reach toward the viewer, fold, and an optional pinned attach angle), bridge (sag, coil), blush, props and particles. `turn` and `tilt` are true yaw and pitch in 3-D and foreshortening in 2-D. Positive tilt brings the bottom edge toward the viewer.
+
+Temple arms always grow out of the frame. At rest they sit at the hinge on the outer side; as they extend, they slide around the rim and emerge radially in the direction they point. The rim position is sampled from the original contours, so the arms stay attached to the frame band even when a lens is scaled, squashed or turned. An action can pin the attach point instead, which is how the closer-look handle sits straight out from the lens centre like a real magnifier. In 3-D the same rim point is the hinge, and an arm reaching toward the viewer is sized so its tip lands where the 2-D tip is drawn.
+
+Props are renderer-neutral: `ring` (tilted orbit), `line` (stroke, optionally with depth), `blob` (filled path), `glyph` (from the glyph library) and `cyl`, a tapered cylinder between two depth points. The binocular barrels, eyecups, hinge and focus wheel are `cyl` props. 3-D draws real cylinders, and 2-D projects them with the same yaw, pitch and slightly-from-above view as the 3-D camera.
 
 ## `createGeekyLive(target, options)`
 
@@ -162,4 +166,4 @@ Events: `say`, `answer`, `ask`, `hide`, `show`, `drop`, `renderer`.
 
 ## Tests
 
-`node tests/live.test.mjs` checks every action for finite, bounded poses, correct loop, hold and return behaviour, determinism by seed, interruption storms, reduced motion, physics settling, gaze convergence, particle caps and geometry parsing. The renderers were checked in headless Chromium (SwiftShader WebGL) with scripted pointer, keyboard and typing input. Test on your target browsers and devices before shipping.
+`node tests/live.test.mjs` checks every action for finite, bounded poses, correct loop, hold and return behaviour, determinism by seed, interruption storms, reduced motion, physics settling, gaze convergence, particle caps and geometry parsing. It also checks that arms always start on the frame band and point radially once extended, that the flutter glide doesn't wobble, that the magnifier handle is radial, and that the binoculars' depth geometry projects consistently. The renderers were checked in headless Chromium (SwiftShader WebGL) with scripted pointer, keyboard and typing input. Test on your target browsers and devices before shipping.

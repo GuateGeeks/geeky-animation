@@ -4,11 +4,13 @@
    behind the frames and swing forward as arms, and props/particles extruded
    from the shared glyph library. THREE is injected, so the host app controls
    the version and there is never a second copy of the library. */
-import {PATHS, C, FRAME, DEG, clamp, lerp, EYE_R, PUPIL_R, GROUND, ARM, GLYPHS, HEART, SPIRAL, PALETTE, color,
-  parsePath, samplePath, lensPoint, armGeometry, browGeometry, bridgeGeometry, coilPoints} from './core.mjs';
+import {PATHS, C, FRAME, DEG, clamp, lerp, Ease, EYE_R, PUPIL_R, GROUND, ARM, EYEBALL, GLYPHS, HEART, SPIRAL, PALETTE, color,
+  parsePath, samplePath, lensPoint, armGeometry, armAttach, browGeometry, bridgeGeometry, coilPoints} from './core.mjs';
 
 const SPIRAL_PTS = samplePath(SPIRAL, 1)[0].pts;
-const ER = 9.5, EZ = -6.2, SHINES = [{x: .82, y: -.97, r: .92}, {x: -.26, y: -1.78, r: .28}];
+/** Ball-space depth behind which the eyeball, lids and creases are clipped (just behind the rim). */
+const EYE_CLIP = 3.6;
+const ER = EYEBALL.r, EZ = EYEBALL.z, SHINES = [{x: .82, y: -.97, r: .92}, {x: -.26, y: -1.78, r: .28}];
 
 /** A chain of cylinders and spheres: smooth tubes that update with transforms only. */
 class Chain {
@@ -46,7 +48,7 @@ export class ThreeRenderer {
     this.owned = []; this.matCache = new Map(); this.geoCache = new Map(); this.props = new Map(); this.fxPool = [];
     const gl = this.gl = new T.WebGLRenderer({antialias: true, alpha: true, powerPreference: 'low-power'});
     gl.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
-    gl.outputColorSpace = T.SRGBColorSpace; gl.setClearColor(0x000000, 0);
+    gl.outputColorSpace = T.SRGBColorSpace; gl.setClearColor(0x000000, 0); gl.localClippingEnabled = true;
     const cv = this.canvas = gl.domElement;
     cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label);
     cv.style.cssText = `position:absolute;left:${-bleed * 100}%;top:${-bleed * 100}%;width:${100 + bleed * 200}%;height:${100 + bleed * 200}%;pointer-events:none;display:block`;
@@ -63,6 +65,7 @@ export class ThreeRenderer {
   _own(x) { this.owned.push(x); return x; }
   _std(o) { return this._own(new this.T.MeshStandardMaterial({roughness: .55, metalness: 0, ...o})); }
   _matFor(name) {
+    if (name === 'white') return this.mat.shine;
     const key = color(name, this.frame);
     if (!this.matCache.has(key)) this.matCache.set(key, this._std({color: key, roughness: .5}));
     return this.matCache.get(key);
@@ -173,7 +176,12 @@ export class ThreeRenderer {
       const pts = samplePath(PATHS[i * 2 + 1])[0].pts, n = pts.length;
       const c = {x: pts.reduce((s, q) => s + q.x, 0) / n - C[i].x, y: pts.reduce((s, q) => s + q.y, 0) / n - C[i].y};
       const ball = new T.Group(); ball.position.set(c.x, -c.y, EZ); g.add(ball);
-      const white = new T.Mesh(this._own(new T.SphereGeometry(ER, 48, 32)), this.mat.white); ball.add(white);
+      // Everything on the eyeball is clipped just behind the rim, so a turned lens never shows the
+      // back of the sphere or an open lid bulging out behind the frame.
+      const clip = new T.Plane(), clipMats = {white: this.mat.white.clone(), lid: this.mat.lid.clone(), crease: this.mat.frame.clone()};
+      for (const m of Object.values(clipMats)) { m.clippingPlanes = [clip]; this._own(m); }
+      clipMats.white.side = T.DoubleSide;
+      const white = new T.Mesh(this._own(new T.SphereGeometry(ER, 48, 32)), clipMats.white); ball.add(white);
       const pivot = new T.Group(); ball.add(pivot);
       const pupil = new T.Mesh(this._cap(1), this.mat.pupil); pivot.add(pupil);
       const shines = SHINES.map(() => { const m = new T.Mesh(this.unit.sph, this.mat.shine); pivot.add(m); return m; });
@@ -182,13 +190,13 @@ export class ThreeRenderer {
       const lidGeoT = this.geoCache.get('lidT') || this._own(new T.SphereGeometry(ER * 1.025, 40, 14, 0, Math.PI * 2, 0, Math.PI / 2));
       const lidGeoB = this.geoCache.get('lidB') || this._own(new T.SphereGeometry(ER * 1.025, 40, 14, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2));
       this.geoCache.set('lidT', lidGeoT); this.geoCache.set('lidB', lidGeoB);
-      const lidT = new T.Mesh(lidGeoT, this.mat.lid), lidB = new T.Mesh(lidGeoB, this.mat.lid); ball.add(lidT, lidB);
+      const lidT = new T.Mesh(lidGeoT, clipMats.lid), lidB = new T.Mesh(lidGeoB, clipMats.lid); ball.add(lidT, lidB);
       // A thin crease along each lid edge, like the 2-D lid line.
       const creaseGeo = this.geoCache.get('crease') || this._own(new T.TorusGeometry(ER * 1.03, .17, 6, 72)); this.geoCache.set('crease', creaseGeo);
-      for (const lid of [lidT, lidB]) { const c = new T.Mesh(creaseGeo, this.mat.frame); c.rotation.x = Math.PI / 2; lid.add(c); }
+      for (const lid of [lidT, lidB]) { const c = new T.Mesh(creaseGeo, clipMats.crease); c.rotation.x = Math.PI / 2; lid.add(c); }
       const outlineMat = this._std({color: this.frame, transparent: true, opacity: 0});
       const outline = new T.Mesh(this._own(new T.TorusGeometry(EYE_R, .55, 10, 56)), outlineMat); g.add(outline);
-      return {g, ball, white, pivot, pupil, shines, heart, spiral, lidT, lidB, outline, outlineMat, c, capKey: 1};
+      return {g, ball, white, pivot, pupil, shines, heart, spiral, lidT, lidB, outline, outlineMat, c, capKey: 1, clip};
     });
     this.bridge = new Chain(T, this.mat.frame, body, this.unit);
     this.coil = new Chain(T, this.mat.frame, body, this.unit);
@@ -237,6 +245,8 @@ export class ThreeRenderer {
     } else this.coil.set([], 0);
     this._props(p);
     this._fx(fx);
+    this.scene.updateMatrixWorld();
+    for (const e of this.eyes) e.clip.set(this.tmp.set(0, 0, 1), -EYE_CLIP).applyMatrix4(e.ball.matrixWorld);
     this.gl.render(this.scene, this.camera);
   }
 
@@ -267,17 +277,19 @@ export class ThreeRenderer {
   }
 
   _arm(i, L, A, lensGroup, restLen) {
-    const T = this.T, side = i ? 1 : -1, at = ARM.attach[i];
-    const hinge = this.tmp.set(at.u, -at.v, -.5).applyMatrix4(lensGroup.matrix);
+    // The hinge is the same rim point the 2-D arm grows from, inside the frame's thickness.
+    const T = this.T, side = i ? 1 : -1, at = armAttach(A, i);
+    const hinge = this.tmp.set(at.u, -at.v, 0).applyMatrix4(lensGroup.matrix);
     const S = {x: hinge.x, y: hinge.y, z: hinge.z};
     const q = lensGroup.quaternion;
     const back = new T.Vector3(side * .18, 0, -1).applyQuaternion(q).normalize();
     const fold = new T.Vector3(-side, 0, -.3).applyQuaternion(q).normalize();
     const rest = back.lerp(fold, A.fold).normalize();
-    const e = clamp(A.ext * 1.6), g = armGeometry(L, A, i), f = A.fwd * Math.PI / 2;
+    const e = Ease.sine(A.ext * 2.4), g = armGeometry(L, A, i), f = A.fwd * Math.PI / 2;
     const dir = new T.Vector3(g.dir.x * Math.cos(f), -g.dir.y * Math.cos(f), Math.sin(f)).normalize();
     const v = rest.clone().lerp(dir, e).normalize();
-    const len = lerp(restLen * L.s * (1 - .45 * A.fold), Math.max(g.len, 1.5), e);
+    // Length chosen so the tip lands where the 2-D arm's tip is drawn, however far it reaches toward the viewer.
+    const len = lerp(restLen * L.s * (1 - .45 * A.fold), Math.max(g.len / Math.max(Math.cos(f), .3), 1.5), e);
     if (len < .4) { this.arms[i].set([], 0); return; }
     const E = {x: S.x + v.x * len, y: S.y + v.y * len, z: S.z + v.z * len};
     const hd = new T.Vector3(0, -1, -.3).lerp(new T.Vector3(g.H.x - g.E.x, -(g.H.y - g.E.y), 0).normalize(), e).normalize();
@@ -285,7 +297,7 @@ export class ThreeRenderer {
     const bow = .08 * len;
     const pts = [S, {x: S.x + v.x * len * .5 + side3.x * bow, y: S.y + v.y * len * .5 + side3.y * bow, z: S.z + v.z * len * .5 + side3.z * bow}, E,
       {x: E.x + (v.x + hd.x) * hl * .35, y: E.y + (v.y + hd.y) * hl * .35, z: E.z + (v.z + hd.z) * hl * .35}, {x: E.x + hd.x * hl, y: E.y + hd.y * hl, z: E.z + hd.z * hl}];
-    this.arms[i].set(pts, .55 * A.w * L.s);
+    this.arms[i].set(pts, .5 * A.w * L.s);
   }
 
   _props(p) {
@@ -300,7 +312,7 @@ export class ThreeRenderer {
         if (q.t === 'glyph') rec.node = this._glyph(q.kind, this.propsGroup);
         else if (q.t === 'line') rec.chain = new Chain(T, this._matFor(q.color || 'frame'), this.propsGroup, this.unit);
         else if (q.t === 'ring') { rec.node = new T.Mesh(this.geoCache.get('prop:ring') || this._own(new T.TorusGeometry(1, .05, 10, 96)), this._matFor(q.color || 'frame')); this.geoCache.set('prop:ring', rec.node.geometry); this.propsGroup.add(rec.node); }
-        else if (q.t === 'barrel') { const g = this.geoCache.get('prop:barrel') || this._own(new T.CylinderGeometry(1, 1, 1, 48, 1, false).rotateX(Math.PI / 2)); this.geoCache.set('prop:barrel', g); rec.node = new T.Mesh(g, this.mat.frame); this.propsGroup.add(rec.node); }
+        else if (q.t === 'cyl') { rec.node = new T.Mesh(this.unit.sph, this._matFor(q.color || 'frame')); this.propsGroup.add(rec.node); }
         else if (q.t === 'blob') rec.node = null;
         this.props.set(key, rec);
       }
@@ -309,11 +321,20 @@ export class ThreeRenderer {
         const n = rec.node; n.position.set(q.x, -q.y, (q.z || 0) + 1); n.rotation.set(0, 0, -(q.rot || 0) * DEG); n.scale.setScalar(Math.max(.001, q.s));
         n.userData.mats.forEach((m, k) => { m.opacity = o; if (k === 0 && q.color) m.color.set(color(q.color, this.frame)); });
       } else if (q.t === 'line') {
-        rec.chain.set(q.pts.map(v => ({x: v.x, y: -v.y, z: -.6})).concat(q.closed ? [{x: q.pts[0].x, y: -q.pts[0].y, z: -.6}] : []), (q.w || 1) / 2 * o);
+        const pts = q.pts.map(v => ({x: v.x, y: -v.y, z: v.z ?? -.6}));
+        rec.chain.set(q.closed ? pts.concat([pts[0]]) : pts, (q.w || 1) / 2 * o);
       } else if (q.t === 'ring') {
         rec.node.position.set(q.x, -q.y, 0); rec.node.rotation.set(-q.tilt * DEG, 0, -q.rot * DEG, 'ZYX'); rec.node.scale.setScalar(q.r * Math.max(.001, o));
-      } else if (q.t === 'barrel') {
-        rec.node.position.set(q.x, -q.y, -q.len / 2 - .5); rec.node.scale.set(q.r, q.r, Math.max(.01, q.len));
+      } else if (q.t === 'cyl') {
+        // Tapered cylinder from a to b; geometry is shared per taper ratio.
+        const n = rec.node, taper = Math.round(clamp(q.r2 / (q.r1 || 1), .05, 4) * 20) / 20, gk = 'cyl:' + taper;
+        if (!this.geoCache.has(gk)) this.geoCache.set(gk, this._own(new T.CylinderGeometry(taper, 1, 1, 44, 1, false)));
+        n.geometry = this.geoCache.get(gk);
+        const a = this.tmp.set(q.a.x, -q.a.y, q.a.z || 0), b = this.tmp2.set(q.b.x, -q.b.y, q.b.z || 0);
+        n.position.addVectors(a, b).multiplyScalar(.5);
+        const d = b.sub(a), len = d.length();
+        if (len > 1e-4) n.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), d.multiplyScalar(1 / len));
+        n.scale.set(q.r1 * o || .001, Math.max(len, .01), q.r1 * o || .001);
       } else if (q.t === 'blob') {
         if (rec.d !== q.d) {
           if (rec.node) { this.propsGroup.remove(rec.node); rec.node.geometry.dispose(); }

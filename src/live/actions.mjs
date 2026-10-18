@@ -4,7 +4,7 @@
    overshoot and settle after them, overlapping action between lenses, brows
    and temples, and squash & stretch on every contact. One-shots start and
    end at rest so they blend cleanly; loops ramp in with `T` (unwrapped time). */
-import {TAU, DEG, clamp, lerp, Ease, gate, kf, wobble, wrapDeg, armGeometry, roundRectPath, RIM_R, GROUND, CONFETTI} from './core.mjs';
+import {TAU, DEG, clamp, lerp, Ease, gate, kf, wobble, wrapDeg, armGeometry, lensPoint, rimRadius, RIM_R, GROUND, EYEBALL, CONFETTI} from './core.mjs';
 
 export const ACTIONS = {};
 export const GROUPS = {classic: 'Classic nine', assistant: 'Assistant', emotion: 'Feelings', fidget: 'Idle fidgets', transform: 'Transformations'};
@@ -43,22 +43,21 @@ def('idle', {label: 'Curious', group: 'classic', dur: 6, loop: true, still: 1.5,
 }});
 
 for (const [id, dir, label] of [['running-right', 1, 'Flutter right'], ['running-left', -1, 'Flutter left']]) {
-  def(id, {label, group: 'classic', dur: 2, loop: true, still: .55, desc: 'The lenses become wings and Geeky takes off.', run(c) {
-    const {p, t, T} = c, m = Ease.out((T - .18) / .45), ant = gate(T, 0, .16, .16, .36);
-    const ph = TAU * 3 * t, f = .5 + .5 * Math.sin(ph), f2 = Math.sin(ph - .75);
-    p.body.y += 2 * ant - m * (3.4 + 1.2 * Math.cos(ph));
-    p.body.sy *= 1 - .13 * ant + .05 * m * Math.sin(ph); p.body.sx *= 1 + .08 * ant;
-    p.body.x += dir * 2.4 * Math.sin(TAU * t / 2) * m;
-    p.body.rot += dir * (8 + 2 * Math.sin(TAU * t / 2)) * m;
-    p.body.turn += dir * 20 * m;
-    for (let i = 0; i < 2; i++) {
-      const L = p.lens[i], sg = i ? 1 : -1;
-      L.x = lerp(L.x, L.x * .86, m); L.y = lerp(L.y, -1.4 * (.5 + .5 * f2), m);
-      L.turn += sg * (24 + 46 * f) * m; L.rot -= sg * (8 + 18 * f2) * m; L.z -= 3 * f * m;
-      p.brow[i].y += .6 * f * m;
-    }
-    c.look(dir * 35, -3, m, 40); c.expr('focused', .45 * m); c.expr('happy', .35 * m);
-    if (c.every(.12)) c.fx('speed', {x: -dir * 21, y: c.rnd.range(-9, 7), vx: -dir * 62, life: .32, size: .9, color: 'lavender', layer: 'back', opacity: .7, pop: false});
+  def(id, {label, group: 'classic', dur: 2, loop: true, still: 1, desc: 'Leans into the direction and glides there: no flapping, no wobble.', run(c) {
+    // A small wind-up against the direction, then one smooth lean into a steady glide.
+    const {p, T} = c, ant = gate(T, 0, .14, .14, .34), go = Ease.back(clamp((T - .2) / .5)), g = clamp(go);
+    const rear = dir > 0 ? p.lens[0] : p.lens[1];
+    p.body.x += -dir * 1.4 * ant + dir * 2.2 * go;
+    p.body.y += .9 * ant - 1.6 * go;
+    p.body.sx *= 1 + .05 * ant + .05 * g; p.body.sy *= 1 - .07 * ant - .03 * g;
+    p.body.rot += -dir * 3 * ant + dir * 11 * go;
+    p.body.turn += dir * 26 * go;
+    rear.x -= dir * 1.3 * go; rear.y += .5 * go;
+    for (const L of p.lens) L.turn += dir * 10 * go;
+    for (const b of p.brow) { b.rot += 5 * g; b.y -= .3 * g; }
+    c.look(dir * 60, -2, g, 40); c.expr('focused', .5 * g); c.expr('happy', .3 * g);
+    if (g > .5 && c.every(.08)) c.fx('speed', {x: -dir * c.rnd.range(17, 24), y: c.rnd.range(-10, 9), vx: -dir * 85, life: .32, size: c.rnd.range(.7, 1.1), color: 'lavender', layer: 'back', opacity: .75, pop: false});
+    if (g > .5 && c.every(.3, .1)) c.fx('puff', {x: -dir * 16, y: c.rnd.range(-3, 5), vx: -dir * 25, size: .6, grow: 1.4, life: .45, drag: 2.5, opacity: .5, layer: 'back'});
     if (c.at(.2)) c.cue('whoosh');
   }});
 }
@@ -146,21 +145,34 @@ def('running', {label: 'Orbit', group: 'classic', dur: 3, loop: true, still: 1, 
   if (c.at(.1)) c.cue('whoosh');
 }});
 
-def('review', {label: 'Closer look', group: 'classic', dur: 4, loop: true, still: 1.5, desc: 'An elastic coil, a magnifying lens and careful reading.', run(c) {
-  const {p, t, T} = c, m = Ease.back(clamp(T / .6)), L = p.lens[0], R = p.lens[1], found = gate(t, 3.0, 3.1, 3.3, 3.6);
-  L.x = lerp(L.x, -19.5, m); L.y = lerp(L.y, 3.6, m); L.s = lerp(1, .56, m);
-  R.x = lerp(R.x, 7.6, m); R.y = lerp(R.y, -1.2, m); R.s = lerp(1, 1.42, m) + .08 * found; R.z = 6 * m;
-  p.bridge.coil = m;
-  const A = p.arm[1]; A.ext = .78 * m; A.ang = -56; A.bend = 0; A.w = lerp(1, 2.6, m); A.fwd = .1 * m;
-  p.brow[1].y += 1.6 * m + .8 * found; p.brow[0].y -= .5 * m; p.brow[0].rot += 10 * m; p.lid[0].top += .32 * m;
+/** Points on a lens glass in body space, with 3-D depth on the eyeball's surface. */
+function glassArc(L, a0, a1, r = 6.5, n = 8) {
+  const z = L.z + (EYEBALL.z + Math.sqrt(EYEBALL.r ** 2 - r * r)) * L.s + .35;
+  return Array.from({length: n + 1}, (_, k) => { const a = lerp(a0, a1, k / n) * DEG; return {...lensPoint(L, r * Math.cos(a), r * Math.sin(a)), z}; });
+}
+
+def('review', {label: 'Closer look', group: 'classic', dur: 4, loop: true, still: 1.5, desc: 'One lens becomes a magnifying glass, handle and all, for some careful reading.', run(c) {
+  const {p, t, T} = c, m = Ease.back(clamp(T / .6)), mc = clamp(m), L = p.lens[0], R = p.lens[1], found = gate(t, 3.0, 3.1, 3.3, 3.6);
   const line = t < 2 ? 0 : 1, lt = (t % 2) / 2, step = lt / .8 * 5;
   const sx = lt < .8 ? -3.3 + 6.6 * (Math.floor(step) / 5 + Ease.out(step % 1) / 5) : lerp(3.3, -3.3, Ease.inOut((lt - .8) / .2));
+  L.x = lerp(L.x, -19.5, m); L.y = lerp(L.y, 2.4, m); L.s = lerp(1, .56, m);
+  R.x = lerp(R.x, 6.4, m) + .5 * sx / 3.3 * mc; R.y = lerp(R.y, -4.2, m); R.s = lerp(1, 1.42, m) + .08 * found; R.z = 6 * m; R.rot *= 1 - mc;
+  p.bridge.coil = m;
+  // The right temple becomes the handle: pinned to the rim, pointing straight out from the lens centre.
+  const H = 52, A = p.arm[1];
+  A.pin = mc; A.at = H; A.ang = -H; A.ext = .95 * m; A.bend = 0; A.fwd = 0; A.w = lerp(1, 2.7, mc);
+  const rr = rimRadius(1, H * DEG), cu = Math.cos(H * DEG), sv = Math.sin(H * DEG);
+  const c0 = lensPoint(R, (rr + .3) * cu, (rr + .3) * sv), c1 = lensPoint(R, (rr + 2.8) * cu, (rr + 2.8) * sv);
+  c.prop({t: 'line', key: 'collar', pts: [{...c0, z: R.z}, {...c1, z: R.z}], w: 1.4 * A.w * R.s, color: 'frame', o: mc});
+  c.prop({t: 'line', key: 'glint', pts: glassArc(R, 200, 248), w: .55 * R.s, color: 'white', o: .85 * mc});
+  p.shadow = 1 - .5 * mc;
+  p.brow[1].y += 1.6 * m + .8 * found; p.brow[0].y -= .5 * m; p.brow[0].rot += 10 * m; p.lid[0].top += .32 * m;
   c.pupil(1, sx, line ? 1.4 : -1.2, m * (1 - found)); c.pupil(0, 3.2, -.8, m);
-  p.pupil[1].size = lerp(p.pupil[1].size, 1.3, clamp(m));
+  p.pupil[1].size = lerp(p.pupil[1].size, 1.3, mc);
   if (c.at(1.62) || c.at(3.62)) c.blink();
-  p.body.x -= m; p.body.y -= .6 * m; p.body.rot -= 2 * m;
-  if (c.at(.8)) c.fx('sparkle', {x: R.x - 6, y: R.y - 7, size: .55, life: .6});
-  if (c.at(3.05)) { c.cue('spot'); c.fx('bang', {x: R.x + 9, y: R.y - 15, size: .55, life: .9, vy: -3}); }
+  p.body.x -= m; p.body.y -= .4 * m;
+  if (c.at(.8)) c.fx('sparkle', {x: R.x - 7.5, y: R.y - 8.5, size: .55, life: .6});
+  if (c.at(3.05)) { c.cue('spot'); c.fx('bang', {x: R.x + 10, y: R.y - 15, size: .55, life: .9, vy: -3}); }
 }});
 
 /* ---------- Assistant behaviours (Clippy's repertoire, Geeky's way) ---------- */
@@ -200,25 +212,42 @@ def('thinking', {label: 'Thinking', dur: 4, loop: true, still: 1.6, desc: 'Eyes 
   p.body.rot -= 4 * m + 1.2 * Math.sin(TAU * t / 4) * m; p.body.y -= .5 * m;
   c.pupils(2.6, -3.4, m); p.brow[1].y += 1.6 * m; p.brow[1].arch += .3 * m; p.brow[0].y -= .3 * m; p.brow[0].rot += 6 * m;
   p.lid[0].top += .12 * m; p.lid[1].bot += .12 * m;
-  const tap = Math.max(0, Math.sin(TAU * 2 * t)); c.reach(1, 18.5, 7.6 + .8 * tap, m, .25); p.arm[1].bend = 55;
+  const tap = Math.max(0, Math.sin(TAU * 2 * t)); c.reach(1, 13.6, 11.4 + .7 * tap, m, .2); p.arm[1].bend = 125 + 20 * tap;
   const hm = gate(t, 2.2, 2.4, 2.8, 3.0); p.lid[1].top += .25 * hm; p.brow[1].y -= .6 * hm;
   [[0, .4], [1, .75], [2, 1.1]].forEach(([k, x]) => { if (c.at(x)) c.fx('dot', {x: 15 + k * 3.5, y: -13 - k * 4.5, size: .55 + k * .35, life: 1.6 - k * .2, vy: -1.5, drag: .2, color: 'mist'}); });
   if (c.at(1.5)) c.cue('think');
 }});
 
-def('searching', {label: 'Searching', dur: 4, loop: true, still: 1, desc: 'The frames snap into binoculars and scan the horizon.', run(c) {
+def('searching', {label: 'Searching', dur: 5, loop: true, still: 1.2, desc: 'The frames snap into binoculars: sweep, focus, spot, double-take.', run(c) {
   const {p, t, T} = c, m = Ease.back(clamp(T / .55)), mc = clamp(m), L = p.lens[0], R = p.lens[1];
-  const scan = kf(t, [[0, -1], [.35, -1], [1.6, 1], [2.2, 1], [3.5, -1], [4, -1]]);
-  L.x = lerp(L.x, -6.3, m); L.y = lerp(L.y, 0, m); R.x = lerp(R.x, 6.3, m); R.y = lerp(R.y, 0, m);
-  L.s = R.s = lerp(1, .8, m); L.rot *= 1 - mc; R.rot *= 1 - mc;
-  p.body.turn += 24 * scan * mc; p.body.y -= .8 * m; p.body.rot += 1.5 * scan * mc;
-  c.pupils(3.2 * scan, -.4, mc); for (const q of p.pupil) q.size = lerp(q.size, 1.35, mc);
-  for (const b of p.brow) b.y += 1.1 * mc;
-  [L, R].forEach((Ln, i) => c.prop({t: 'barrel', key: 'barrel' + i, x: Ln.x, y: Ln.y, r: RIM_R * Ln.s * 1.04, len: 9 * mc, o: mc, layer: 'back'}));
-  c.prop({t: 'blob', key: 'hinge', d: roundRectPath(-2, -8.6 * L.s, 4, 3.2, 1.2), fill: 'frame', o: mc, layer: 'back'});
-  const spot = gate(t, 1.65, 1.75, 2.05, 2.25); for (const b of p.brow) b.y += .9 * spot;
-  if (c.at(1.7)) { c.cue('spot'); c.fx('bang', {x: 12, y: -17, size: .5, life: .8, vy: -3}); }
-  if (c.at(.35) || c.at(2.2)) c.fx('sparkle', {x: (scan > 0 ? 3 : -9), y: -4.5, size: .45, life: .45});
+  const scan = kf(t, [[0, -1], [.5, -1], [1.9, 1], [3.3, 1], [4.6, -1], [5, -1]]);
+  const focus = gate(t, 1.95, 2.05, 2.35, 2.5), spot = gate(t, 2.05, 2.15, 2.5, 2.75), take = gate(t, 2.8, 2.92, 3.02, 3.25);
+  const s = .8 + .05 * spot, gap = 8.4;
+  L.x = lerp(L.x, -gap, m); L.y = lerp(L.y, 0, m); R.x = lerp(R.x, gap, m); R.y = lerp(R.y, 0, m);
+  L.s = R.s = lerp(1, s, m); L.rot *= 1 - mc; R.rot *= 1 - mc;
+  p.bridge.o = 1 - mc;
+  p.body.turn += 26 * scan * mc; p.body.rot += 2 * scan * mc; p.body.y -= (1 + 1.4 * take) * m;
+  c.pupils(2.8 * scan, -.3, mc); for (const q of p.pupil) q.size = lerp(q.size, 1.4 + .25 * spot, mc);
+  for (const b of p.brow) b.y += (1.1 + .9 * spot) * mc;
+  c.expr('surprised', .7 * take);
+  // Binocular body, back to front. The farther barrel is drawn first.
+  const len = 11 * mc * (1 - .55 * take), wz = -len * .45, wy = -RIM_R * s * .62;
+  for (const k of (p.body.turn >= 0 ? [1, 0] : [0, 1])) {
+    const Ln = p.lens[k], sd = k ? 1 : -1, r = RIM_R * Ln.s * 1.03, back = {x: Ln.x + sd * .4, y: Ln.y - .5, z: -.4 - len};
+    c.prop({t: 'cyl', key: 'cup' + k, a: back, b: {x: back.x, y: back.y - .2, z: back.z - 3 * mc}, r1: r * .6, r2: r * .64, color: 'frame', o: mc, layer: 'back'});
+    c.prop({t: 'cyl', key: 'barrel' + k, a: {x: Ln.x, y: Ln.y, z: -.4}, b: back, r1: r, r2: r * .8, color: 'barrel', o: mc, layer: 'back'});
+  }
+  c.prop({t: 'cyl', key: 'hinge', a: {x: -2.6, y: -.8, z: wz}, b: {x: 2.6, y: -.8, z: wz}, r1: 2.1, r2: 2.1, color: 'frame', o: mc, layer: 'back'});
+  c.prop({t: 'cyl', key: 'wheel', a: {x: -1.9, y: wy, z: wz}, b: {x: 1.9, y: wy, z: wz}, r1: 2.3, r2: 2.3, color: 'lavender', o: mc, layer: 'back'});
+  const turnPhase = t * .2 + focus * .9;
+  for (let k = 0; k < 6; k++) {
+    const a = ((k / 6 + turnPhase) % 1) * TAU, ry = wy - 2.35 * Math.sin(a), rz = wz + 2.35 * Math.cos(a);
+    c.prop({t: 'line', key: 'ridge' + k, depth: true, pts: [{x: -1.5, y: ry, z: rz}, {x: 1.5, y: ry, z: rz}], w: .4, color: 'frame', o: mc * clamp(Math.cos(a) * 3)});
+  }
+  // Glass glints slide across the lenses as they sweep.
+  [L, R].forEach((Ln, k) => { const a0 = 212 - 34 * scan; c.prop({t: 'line', key: 'glint' + k, pts: glassArc(Ln, a0, a0 + 40, 6.4), w: .5, color: 'white', o: .8 * mc}); });
+  if (c.at(2.08)) { c.cue('spot'); c.fx('bang', {x: 14, y: -17, size: .5, life: .8, vy: -3}); c.fx('sparkle', {x: R.x - 3.5, y: R.y - 4.5, size: .5, life: .5}); }
+  if (c.at(2.85)) c.cue('surprise');
 }});
 
 def('writing', {label: 'Writing', dur: 3, loop: true, still: 1.5, desc: 'Scribbles notes on a little pad, Clippy style.', run(c) {
@@ -424,7 +453,7 @@ def('polish', {label: 'Polish lenses', group: 'fidget', dur: 3.4, still: 1.4, de
   c.prop({t: 'glyph', key: 'fog', kind: 'puff', x: L.x, y: L.y, s: 6.6 * fog, color: 'mist', o: .75 * fog});
   const ang = TAU * 2.2 * (t - .9), rub = gate(t, .9, 1.1, 2.2, 2.4);
   const tx = L.x + 3.2 * Math.cos(ang) * rub, ty = L.y + 2.6 * Math.sin(ang) * rub;
-  c.reach(0, tx, ty, w, .75); p.arm[0].bend = 60;
+  p.arm[0].pin = w; p.arm[0].at = 140; c.reach(0, tx, ty, w, .55); p.arm[0].bend = 60;
   p.lid[0].top += .62 * rub; p.lid[0].bot += .38 * rub; c.pupil(1, -3.6, 1.5, rub);
   p.body.rot += 1.5 * Math.sin(ang) * rub; L.rot += 4 * Math.sin(ang) * rub;
   if (rub > .5 && c.every(.28, 1)) c.fx('sparkle', {x: tx, y: ty, size: .3, life: .35});
@@ -460,7 +489,6 @@ def('bicycle', {label: 'Bicycle', group: 'transform', dur: 2, loop: true, still:
   line('bk-crank', [{x: BB.x - cx, y: BB.y - cy}, {x: BB.x + cx, y: BB.y + cy}], .8);
   line('bk-pedal1', [{x: BB.x + cx - 1.2, y: BB.y + cy}, {x: BB.x + cx + 1.2, y: BB.y + cy}], .9);
   line('bk-pedal2', [{x: BB.x - cx - 1.2, y: BB.y - cy}, {x: BB.x - cx + 1.2, y: BB.y - cy}], .9);
-  c.reach(dir > 0 ? 1 : 0, HB.x, HB.y, mc, .15);
   c.look(dir * 40, -2, mc, 40); c.expr('focused', .4 * mc); c.expr('happy', .45 * mc);
   p.follow = 1 - mc;
   if (c.every(.15)) c.fx('speed', {x: -dir * 22, y: c.rnd.range(-12, 8), vx: -dir * 70, life: .3, layer: 'back', opacity: .6, pop: false});
