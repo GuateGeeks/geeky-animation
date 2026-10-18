@@ -6,7 +6,7 @@ A reusable, editable animation system built from the original Geeky SVG. The ori
 
 ## Geeky Live (new)
 
-A Clippy-style, highly interactive Geeky in **plain SVG** and **Three.js**, driven by one shared animation brain: 36 actions (the classic nine re-choreographed, plus assistant behaviours, feelings, fidgets and a bicycle transformation), eyebrows and temple-arms, a cursor-following gaze with saccades and convergence, blinks, secondary physics, pokes, flings, hand-spins, speech balloons, a context menu, an “Ask Geeky” box, and page awareness — including *“It looks like you’re writing a letter.”*
+A Clippy-style, highly interactive Geeky in **plain SVG** and **Three.js**, driven by one shared animation brain: 36 actions (the classic nine re-choreographed, plus assistant behaviours, feelings, fidgets and a bicycle transformation), eyebrows that appear only when an expression needs them, temple-arms, a cursor-following gaze with saccades and convergence, blinks, secondary physics, pokes, flings, hand-spins, speech balloons, a context menu, an “Ask Geeky” box, and page awareness — including *“It looks like you’re writing a letter.”*
 
 - Play: [**live/index.html**](live/index.html) · API: [**docs/LIVE.md**](docs/LIVE.md) · Entry: `src/live/index.mjs`
 

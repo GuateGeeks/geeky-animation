@@ -87,6 +87,8 @@ Each frame the brain layers, in order:
 6. **Gaze:** saccades at rest; pursuit with second-order dynamics when tracking. The eyes lead and the head follows. Each eye aims separately, so near targets make it cross-eyed.
 7. **Blinks:** random intervals, occasional doubles, a few milliseconds of left/right lag, extra blinks on big glances.
 
+Eyebrows are shown only when an animation needs them. After the choreography runs, each brow is measured against rest (raised, knitted or arched). At rest the brows are hidden, and they grow in for real expression: surprise, worry, a wink, thinking, scrutiny, delight. A plain smile, gliding, riding, writing, nodding and sleeping use the eyes alone, and physics bounces never flash brows in. Use `brows: 'always'` to keep them visible or `brows: false` to remove them.
+
 Pose channels include `body` (x, y, z, rot, sx, sy, turn, tilt), per-lens transforms plus wheel `spin`, detachable eyeballs, pupils (offset, size, heart, spiral), lids (top, bottom, tilt, crease curvature), brows, temple arms (extension, angle, hook bend, reach toward the viewer, fold, and an optional pinned attach angle), bridge (sag, coil), blush, props and particles. `turn` and `tilt` are true yaw and pitch in 3-D and foreshortening in 2-D. Positive tilt brings the bottom edge toward the viewer.
 
 Temple arms always grow out of the frame. At rest they sit at the hinge on the outer side; as they extend, they slide around the rim and emerge radially in the direction they point. The rim position is sampled from the original contours, so the arms stay attached to the frame band even when a lens is scaled, squashed or turned. An action can pin the attach point instead, which is how the closer-look handle sits straight out from the lens centre like a real magnifier. In 3-D the same rim point is the root, and an arm reaching toward the viewer is sized so its tip lands where the 2-D tip is drawn. The 3-D glasses show no temples at rest. When an action extends one, it grows out of the rim as a single smooth curve, shaft and hook together.
@@ -108,7 +110,8 @@ Props are renderer-neutral: `ring` (tilted orbit), `line` (stroke, optionally wi
 | autonomous | true | Idle fidgets (look around, polish lenses, push up glasses, yawn) |
 | reducedMotion | `'system'` | `'system'`, `true` or `false` |
 | zoom | 1 | 1 frames a 64-unit stage; smaller values leave more room |
-| frameColor, brows, shadow, label, seed | | Appearance, accessible name and deterministic randomness |
+| brows | `'auto'` | `'auto'` shows brows only while an expression uses them; `'always'` or `true` keeps them; `false` removes them |
+| frameColor, shadow, label, seed | | Appearance, accessible name and deterministic randomness |
 
 Methods: `play(id, {loop, params, blend, then, restart})` → Promise, `stop()`, `animate()` (random crowd-pleaser), `setMood(name)`, `setBase(id)`, `lookAt(element | {x, y} | 'user' | null)`, `angleTo(element | point)`, `notify(signal)`, `poke(x?, y?)`, `setDrag(active, vxPx, vyPx)`, `impact(speed)`, `hit(clientX, clientY)`, `anchor()`, `setRenderer(kind, {THREE})`, `setZoom(z)`, `setSpeed(0.1–4)`, `pause()`, `resume()`, `setReducedMotion(v)`, `setFollowPointer(bool)`, `getState()`, `toSVG()` (SVG renderer), `on(event, fn)` → unsubscribe, `destroy()`.
 

@@ -196,6 +196,19 @@ await test('orbit lenses ride compact orbits in front of the rings', () => {
   }
 });
 
+await test('brows appear only when an animation needs them', () => {
+  const peak = (id, opts, from = 0, to = Infinity) => {
+    const b = new GeekyBrain({seed: 6, autonomous: false, ...opts}); b.play(id); let m = 0;
+    for (let f = 0; f < Math.round(ACTIONS[id].dur * 60); f++) { const p = b.update(1 / 60), t = (f + 1) / 60; if (t >= from && t <= to) m = Math.max(m, p.brow[0].o, p.brow[1].o); }
+    return m;
+  };
+  assert.ok(peak('idle', {}, 0, 3) < .02 && peak('idle', {}, 4.6, 6) < .02, 'hidden at rest');
+  for (const id of ['running-right', 'running', 'bicycle', 'nod', 'sleep', 'writing', 'reading']) assert.ok(peak(id) < .05, `${id} needs no brows`);
+  assert.ok(peak('idle', {}, 3.4, 4) > .9, 'the curious raise shows a brow');
+  for (const id of ['surprised', 'sad', 'thinking', 'confused', 'review']) assert.ok(peak(id) > .9, `${id} uses its brows`);
+  assert.ok(peak('nod', {brows: 'always'}) > .99 && peak('sad', {brows: 'never'}) === 0, 'always / never modes');
+});
+
 await test('binoculars build depth geometry that projects consistently', () => {
   const b = new GeekyBrain({seed: 2, autonomous: false}); b.play('searching'); const p = run(b, 1.2);
   const cyl = p.props.filter(q => q.t === 'cyl');
