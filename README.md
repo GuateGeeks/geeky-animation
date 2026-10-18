@@ -12,6 +12,14 @@ A reusable, editable animation system built from the original Geeky SVG. The ori
 4. Select **assets/states/** for drop-in animated SVG, GIF or WebP files, or transparent sprite sheets.
 5. Read **manifest.json** for exact state IDs, paths, dimensions, timing and gaze directions.
 
+## GitHub Pages
+
+A responsive landing page is included at [index.html](index.html), with the interactive demo, asset downloads and guide links. The [Pages deployment guide](docs/GITHUB-PAGES.md) covers setup, local preview and troubleshooting.
+
+After pushing the Pages changes, select **Settings → Pages → Source → GitHub Actions**, then run **Deploy Geeky to GitHub Pages** from the Actions tab. The workflow validates and publishes an explicit static-site allowlist using official pinned actions; no custom secret is required.
+
+Expected URL after deployment: `https://guategeeks.github.io/geeky-animation/`. This is not a live-status claim; use the URL in the successful `github-pages` deployment.
+
 ## Contents
 
 - 9 four-second state animations: curious, flutter right/left, hello, delight, oops, waiting, orbit and closer look
