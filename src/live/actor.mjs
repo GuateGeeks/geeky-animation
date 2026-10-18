@@ -18,8 +18,9 @@ export class GeekyActor {
     this.host = typeof target === 'string' ? doc.querySelector(target) : target;
     if (!this.host || this.host.nodeType !== 1) throw new TypeError('Geeky Live needs a DOM element or matching selector');
     this.opts = {renderer: 'svg', THREE: null, followPointer: true, interactive: true, dragMode: 'spin', reactions: true,
-      reducedMotion: 'system', autonomous: true, brows: true, shadow: true, label: 'Geeky', ...options};
-    this.brain = new GeekyBrain({seed: options.seed, autonomous: this.opts.autonomous});
+      reducedMotion: 'system', autonomous: true, brows: 'auto', shadow: true, label: 'Geeky', ...options};
+    const b = this.opts.brows;
+    this.brain = new GeekyBrain({seed: options.seed, autonomous: this.opts.autonomous, brows: b === false ? 'never' : b === true || b === 'always' ? 'always' : 'auto'});
     this.listeners = new Map(); this._raf = null; this._timer = null; this._last = null; this._paused = false; this._destroyed = false;
     this._clicks = []; this._lookEl = null; this._ptr = null;
     this._media = typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -99,7 +100,7 @@ export class GeekyActor {
   _emit(type, data) { this.listeners.get(type)?.forEach(fn => { try { fn(data); } catch (e) { console.error(e); } }); }
 
   _mount(kind) {
-    const o = {frameColor: this.opts.frameColor, brows: this.opts.brows, shadow: this.opts.shadow, label: this.opts.label, zoom: this.opts.zoom ?? 1};
+    const o = {frameColor: this.opts.frameColor, brows: this.opts.brows !== false, shadow: this.opts.shadow, label: this.opts.label, zoom: this.opts.zoom ?? 1};
     if (kind === 'three') {
       if (!this.opts.THREE) throw new Error('The Three.js renderer needs the THREE namespace: createGeekyLive(el, {renderer: "three", THREE})');
       this.renderer = new ThreeRenderer(this.host, {...o, THREE: this.opts.THREE});

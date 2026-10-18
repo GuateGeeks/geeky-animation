@@ -117,8 +117,10 @@ export class SvgRenderer {
       // Eyebrows.
       const bw = browGeometry(L, p.brow[i], i);
       set(this.brows[i], 'd', `M${fmt(bw.a.x)} ${fmt(bw.a.y)}Q${fmt(bw.c.x)} ${fmt(bw.c.y)} ${fmt(bw.b.x)} ${fmt(bw.b.y)}`);
-      set(this.brows[i], 'stroke-width', fmt(1.55 * L.s));
-      set(this.brows[i], 'opacity', this.showBrows ? fmt(p.brow[i].o) : '0');
+      // Brows grow in (thicker and more opaque) as an expression needs them.
+      const bo = this.showBrows ? p.brow[i].o : 0;
+      set(this.brows[i], 'stroke-width', fmt(1.55 * L.s * Math.sqrt(bo)));
+      set(this.brows[i], 'opacity', fmt(Math.min(1, bo * 1.5)));
       // Temple arms: behind the frames unless reaching toward the viewer.
       const A = p.arm[i], front = A.fwd > .5, show = A.ext > .02;
       const [on, off] = front ? [this.armFront[i], this.armBack[i]] : [this.armBack[i], this.armFront[i]];

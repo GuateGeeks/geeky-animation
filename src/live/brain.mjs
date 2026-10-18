@@ -8,7 +8,7 @@ import {ACTIONS, resolveAction} from './actions.mjs';
 
 export const EXPRESSIONS = {
   neutral: {},
-  happy: {brow: {y: .7, rot: -3, arch: .75}, lid: {bot: .3, bc: .9}, size: 1.05},
+  happy: {brow: {y: .35, rot: -2, arch: .6}, lid: {bot: .3, bc: .9}, size: 1.05},
   joy: {brow: {y: 1.1, rot: -4, arch: .85}, lid: {top: .42, bot: .58, bc: 1.8, tc: 0}, size: 1},
   surprised: {brow: {y: 2.3, rot: -5, arch: .95}, lid: {top: 0, bot: 0}, size: .76},
   curious: {brow: [{y: .2}, {y: 1.8, arch: .85}], lid: [{top: .12}, {top: 0}], size: 1.1},
@@ -74,8 +74,18 @@ export function applyExpression(p, name, w) {
   if (e.blush !== undefined) p.blush = lerp(p.blush, e.blush, w);
 }
 
+/**
+ * How much a brow is actually saying something: 0 at rest, 1 once it is raised, knitted or arched.
+ * In 'auto' mode brows only appear while an action or mood uses them.
+ */
+export function browNeed(b) {
+  const e = Math.max(Math.abs(b.y) / .9, Math.abs(b.rot) / 10, Math.abs(b.arch - .45) / .5);
+  return Ease.sine((e - .4) / .25);
+}
+
 export class GeekyBrain {
-  constructor({seed, autonomous = true, reduced = false} = {}) {
+  constructor({seed, autonomous = true, reduced = false, brows = 'auto'} = {}) {
+    this.brows = brows;
     this.rnd = rng(seed ?? (Math.random() * 2 ** 31) >>> 0);
     this.autonomous = autonomous; this.reduced = reduced; this.speed = 1;
     this.time = 0; this.base = 'idle';
@@ -210,6 +220,9 @@ export class GeekyBrain {
     if (!this.reduced) this._life(p);
     this._applyMood(p);
     def.run(this._ctx(a, p, t, T, quiet || fixedT !== undefined));
+    // Decided before secondary physics, so bounces never flash the brows in.
+    if (this.brows === 'auto') for (const b of p.brow) b.o *= browNeed(b);
+    else if (this.brows === 'never') for (const b of p.brow) b.o = 0;
     if (fixedT === undefined) a.prevT = T;
     return p;
   }

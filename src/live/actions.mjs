@@ -54,8 +54,8 @@ for (const [id, dir, label] of [['running-right', 1, 'Flutter right'], ['running
     p.body.turn += dir * 26 * go;
     rear.x -= dir * 1.3 * go; rear.y += .5 * go;
     for (const L of p.lens) L.turn += dir * 10 * go;
-    for (const b of p.brow) { b.rot += 5 * g; b.y -= .3 * g; }
-    c.look(dir * 60, -2, g, 40); c.expr('focused', .5 * g); c.expr('happy', .3 * g);
+    for (const L of p.lid) { L.top += .14 * g; L.bot += .08 * g; }
+    c.look(dir * 60, -2, g, 40); c.expr('happy', .3 * g);
     if (g > .5 && c.every(.08)) c.fx('speed', {x: -dir * c.rnd.range(17, 24), y: c.rnd.range(-10, 9), vx: -dir * 85, life: .32, size: c.rnd.range(.7, 1.1), color: 'lavender', layer: 'back', opacity: .75, pop: false});
     if (g > .5 && c.every(.3, .1)) c.fx('puff', {x: -dir * 16, y: c.rnd.range(-3, 5), vx: -dir * 25, size: .6, grow: 1.4, life: .45, drag: 2.5, opacity: .5, layer: 'back'});
     if (c.at(.2)) c.cue('whoosh');
@@ -230,7 +230,7 @@ def('searching', {label: 'Searching', dur: 5, loop: true, still: 1.2, desc: 'The
   p.bridge.o = 1 - mc;
   p.body.turn += 26 * scan * mc; p.body.rot += 2 * scan * mc; p.body.y -= (1 + 1.4 * take) * m;
   c.pupils(2.8 * scan, -.3, mc); for (const q of p.pupil) q.size = lerp(q.size, 1.4 + .25 * spot, mc);
-  for (const b of p.brow) b.y += (1.1 + .9 * spot) * mc;
+  for (const b of p.brow) b.y += 1.9 * spot * mc;
   c.expr('surprised', .7 * take);
   // Binocular body, back to front. The farther barrel is drawn first.
   const len = 11 * mc * (1 - .55 * take), wz = -len * .45, wy = -RIM_R * s * .62;
@@ -265,7 +265,7 @@ def('writing', {label: 'Writing', dur: 3, loop: true, still: 1.5, desc: 'Scribbl
   const pr = 28 * DEG, ps = .55;
   c.prop({t: 'glyph', key: 'pencil', kind: 'pencil', x: tip.x + Math.sin(pr) * 5.1 * ps, y: tip.y - Math.cos(pr) * 5.1 * ps, rot: 28, s: ps * mc, o: mc});
   c.reach(1, tip.x + 2.2, tip.y - 3.6, m, .3); p.arm[1].bend = 70;
-  c.look(tip.x, tip.y, m, 22); c.expr('focused', .6 * m);
+  c.look(tip.x, tip.y, m, 22); for (const L of p.lid) { L.top += .2 * m; L.bot += .12 * m; }
   p.body.rot += 2 * m; p.body.y += .3 * Math.sin(TAU * t * 3) * m + .5 * Math.max(0, wobble(c.since('key'), 3, 6));
   if (c.every(.5)) c.cue('scribble');
 }});
@@ -302,7 +302,7 @@ def('point', {label: 'Point', dur: 2.2, still: 1, params: {angle: 20}, desc: 'Po
   const A = p.arm[i]; A.ext = (.95 + .12 * nudge) * k; A.ang = right ? ang : 180 - ang; A.bend = 10;
   const dx = Math.cos(ang * DEG), dy = -Math.sin(ang * DEG);
   p.body.rot += dx * 5 * k; p.body.x += dx * 1.2 * k; p.body.y += dy * .8 * k; p.body.turn += dx * 14 * k;
-  c.look(dx * 60, dy * 60, k, 30); c.expr('happy', .6 * clamp(k)); p.brow[i].y += .8 * k;
+  c.look(dx * 60, dy * 60, k, 30); c.expr('happy', .6 * clamp(k));
 }});
 
 def('listen', {label: 'Listening', dur: 3, loop: true, still: 1, desc: 'Leans in, all ears (well, all eyes).', run(c) {
@@ -355,7 +355,6 @@ def('dizzy', {label: 'Dizzy', group: 'emotion', dur: 3.2, still: 1.2, desc: 'Spi
 
 def('sleep', {label: 'Sleep', group: 'emotion', dur: 4, loop: true, still: 2, desc: 'Eyes shut, slow breaths and drifting Zzz.', run(c) {
   const {p, t, T} = c, m = Ease.inOut(T / 1.2), br = Math.sin(TAU * t / 4);
-  c.expr('sleepy', m);
   for (const L of p.lid) { L.top = lerp(L.top, .6, m); L.bot = lerp(L.bot, .42, m); L.bc = lerp(L.bc, -.7, m); }
   c.noBlink(m);
   p.body.y += 1.6 * m + .5 * br * m; p.body.rot += 5 * m; p.body.sy *= 1 + .035 * br * m; p.body.sx *= 1 - .02 * br * m;
@@ -423,7 +422,7 @@ def('nod', {label: 'Yes', group: 'emotion', dur: 1.1, still: .3, desc: 'An eager
 
 def('shake', {label: 'No', group: 'emotion', dur: 1.2, still: .3, desc: 'A polite head shake.', run(c) {
   const {p, t} = c, w = gate(t, 0, .08, .85, 1.2), s = Math.sin(TAU * 2.6 * t) * w;
-  p.body.turn += 20 * s; p.body.x += .8 * s; c.pupils(-2.4 * s, .4, w * .8); c.expr('worried', .4 * w);
+  p.body.turn += 20 * s; p.body.x += .8 * s; c.pupils(-2.4 * s, .4, w * .8); c.expr('worried', .25 * w);
 }});
 
 /* ---------- Idle fidgets ---------- */
@@ -491,7 +490,7 @@ def('bicycle', {label: 'Bicycle', group: 'transform', dur: 2, loop: true, still:
   line('bk-crank', [{x: BB.x - cx, y: BB.y - cy}, {x: BB.x + cx, y: BB.y + cy}], .8);
   line('bk-pedal1', [{x: BB.x + cx - 1.2, y: BB.y + cy}, {x: BB.x + cx + 1.2, y: BB.y + cy}], .9);
   line('bk-pedal2', [{x: BB.x - cx - 1.2, y: BB.y - cy}, {x: BB.x - cx + 1.2, y: BB.y - cy}], .9);
-  c.look(dir * 40, -2, mc, 40); c.expr('focused', .4 * mc); c.expr('happy', .45 * mc);
+  c.look(dir * 40, -2, mc, 40); c.expr('happy', .45 * mc);
   p.follow = 1 - mc;
   if (c.every(.15)) c.fx('speed', {x: -dir * 22, y: c.rnd.range(-12, 8), vx: -dir * 70, life: .3, layer: 'back', opacity: .6, pop: false});
   if (c.every(.22)) c.fx('puff', {x: -dir * 13, y: GROUND - 1.5, vx: -dir * 12, vy: -3, size: .7, grow: 1.2, life: .5, drag: 2, opacity: .7});

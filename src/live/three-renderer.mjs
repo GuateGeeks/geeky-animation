@@ -253,7 +253,7 @@ export class ThreeRenderer {
       m.visible = p.blush > .02; m.position.set(bl.x, -bl.y, 1.4 + (L.z || 0)); m.scale.set(2.8 * L.s, 1.2 * L.s, .5);
       // Brows float just in front of the rim plane.
       const bw = browGeometry(L, p.brow[i], i), bo = this.showBrows ? p.brow[i].o : 0;
-      this.brows[i].set(quad(bw.a, bw.c, bw.b, 8, 1.6 + (L.z || 0)), .8 * L.s * clamp(bo * 1.4));
+      this.brows[i].set(quad(bw.a, bw.c, bw.b, 8, 1.6 + (L.z || 0)), .8 * L.s * Math.sqrt(clamp(bo)));
       this._arm(i, L, p.arm[i], lens.g);
     }
     this.mat.blush.opacity = .8 * p.blush;
