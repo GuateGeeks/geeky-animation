@@ -8,9 +8,11 @@ import {PATHS, C, FRAME, DEG, clamp, lerp, Ease, EYE_R, PUPIL_R, GROUND, ARM, EY
   parsePath, samplePath, lensPoint, armGeometry, armAttach, browGeometry, bridgeGeometry, coilPoints} from './core.mjs';
 
 const SPIRAL_PTS = samplePath(SPIRAL, 1)[0].pts;
-/** Ball-space depth behind which the eyeball, lids and creases are clipped (just behind the rim). */
-const EYE_CLIP = 3.6;
-const ER = EYEBALL.r, EZ = EYEBALL.z, SHINES = [{x: .82, y: -.97, r: .92}, {x: -.26, y: -1.78, r: .28}];
+/** Lids and creases are clipped at the rim's mid-depth (ball space), where the eye dome meets the frame. */
+const EYE_CLIP = -EYEBALL.z + .3;
+/** Layers on the eye surface, as offsets above the dome: pupil < catchlights / heart / spiral < lids. */
+const LAYER = {pupil: .05, shine: .12, sticker: .02, lid: .26};
+const ER = EYEBALL.r, EZ = EYEBALL.z, LID_K = EYEBALL.base / EYEBALL.r, SHINES = [{x: .82, y: -.97, r: .92}, {x: -.26, y: -1.78, r: .28}];
 
 /** A chain of cylinders and spheres: smooth tubes that update with transforms only. */
 class Chain {
@@ -87,6 +89,7 @@ export class ThreeRenderer {
       pupil: this._own(new T.MeshPhysicalMaterial({color: '#000000', roughness: .25, clearcoat: 1, clearcoatRoughness: .08})),
       shine: this._own(new T.MeshBasicMaterial({color: '#ffffff'})),
       lid: this._std({color: PALETTE.lid3d, roughness: .6, side: T.DoubleSide}),
+      back: this._std({color: PALETTE.back, roughness: .5}),
       heart: this._std({color: PALETTE.heart, roughness: .35}),
       blush: this._std({color: PALETTE.blush, transparent: true, opacity: .8, depthWrite: false})
     };
@@ -141,7 +144,7 @@ export class ThreeRenderer {
     const key = 'cap' + Math.round(size * 20);
     if (!this.geoCache.has(key)) {
       const a = Math.asin(Math.min(.95, PUPIL_R * Math.round(size * 20) / 20 / ER));
-      const g = this._own(new this.T.SphereGeometry(ER * 1.006, 40, 8, 0, Math.PI * 2, 0, a)); g.rotateX(Math.PI / 2);
+      const g = this._own(new this.T.SphereGeometry(ER + LAYER.pupil, 40, 8, 0, Math.PI * 2, 0, a)); g.rotateX(Math.PI / 2);
       this.geoCache.set(key, g);
     }
     return this.geoCache.get(key);
@@ -162,41 +165,46 @@ export class ThreeRenderer {
     this.lenses = [0, 1].map(i => {
       const g = new T.Group(), spin = new T.Group(); g.add(spin); body.add(g);
       const shape = this._shape(parsePath(PATHS[i * 2])[0], C[i].x, C[i].y);
-      shape.holes.push(this._shape(parsePath(PATHS[i * 2 + 1])[0], C[i].x, C[i].y, T.Path));
+      let hole = this._shape(parsePath(PATHS[i * 2 + 1])[0], C[i].x, C[i].y, T.Path);
+      // The source contours wind the same way; a hole must wind opposite to its outline or the
+      // frame's inner wall faces inward, gets culled, and the rim looks hollow from an angle.
+      if (T.ShapeUtils.isClockWise(shape.getPoints(64)) === T.ShapeUtils.isClockWise(hole.getPoints(64))) hole = new T.Path(hole.getPoints(96).reverse());
+      shape.holes.push(hole);
       const geo = this._own(new T.ExtrudeGeometry(shape, {depth: 1.3, bevelEnabled: true, bevelThickness: .45, bevelSize: .32, bevelSegments: 4, curveSegments: 40}));
       geo.translate(0, 0, -.65);
       spin.add(new T.Mesh(geo, this.mat.frame));
       return {g, spin};
     });
     const heartShape = this._shape(parsePath(HEART)[0]);
-    const heartGeo = this._own(new T.ExtrudeGeometry(heartShape, {depth: .35, bevelEnabled: false, curveSegments: 18}));
-    heartGeo.scale(.8, .8, 1); heartGeo.translate(0, 0, ER + .05);
+    const heartGeo = this._own(new T.ExtrudeGeometry(heartShape, {depth: .14, bevelEnabled: false, curveSegments: 18}));
+    heartGeo.scale(.8, .8, 1); heartGeo.translate(0, 0, ER + LAYER.sticker);
     this.eyes = [0, 1].map(i => {
       const g = new T.Group(); body.add(g);
       const pts = samplePath(PATHS[i * 2 + 1])[0].pts, n = pts.length;
       const c = {x: pts.reduce((s, q) => s + q.x, 0) / n - C[i].x, y: pts.reduce((s, q) => s + q.y, 0) / n - C[i].y};
       const ball = new T.Group(); ball.position.set(c.x, -c.y, EZ); g.add(ball);
-      // Everything on the eyeball is clipped just behind the rim, so a turned lens never shows the
-      // back of the sphere or an open lid bulging out behind the frame.
-      const clip = new T.Plane(), clipMats = {white: this.mat.white.clone(), lid: this.mat.lid.clone(), crease: this.mat.frame.clone()};
+      // The eye is a lens-shaped shell: a front dome and a flatter back dome whose edges meet
+      // inside the frame band at mid-depth. No gap shows at any angle, and from behind the shell
+      // starts exactly where the frame does.
+      const white = new T.Mesh(this._dome('front'), this.mat.white); ball.add(white);
+      const backShell = new T.Mesh(this._dome('back'), this.mat.back); backShell.position.set(c.x, -c.y, 0); g.add(backShell);
+      const clip = new T.Plane(), clipMats = {lid: this.mat.lid.clone(), crease: this.mat.frame.clone()};
       for (const m of Object.values(clipMats)) { m.clippingPlanes = [clip]; this._own(m); }
-      clipMats.white.side = T.DoubleSide;
-      const white = new T.Mesh(this._own(new T.SphereGeometry(ER, 48, 32)), clipMats.white); ball.add(white);
       const pivot = new T.Group(); ball.add(pivot);
       const pupil = new T.Mesh(this._cap(1), this.mat.pupil); pivot.add(pupil);
       const shines = SHINES.map(() => { const m = new T.Mesh(this.unit.sph, this.mat.shine); pivot.add(m); return m; });
       const heart = new T.Mesh(heartGeo, this.mat.heart); pivot.add(heart);
       const spiral = new Chain(T, this.mat.pupil, pivot, this.unit);
-      const lidGeoT = this.geoCache.get('lidT') || this._own(new T.SphereGeometry(ER * 1.025, 40, 14, 0, Math.PI * 2, 0, Math.PI / 2));
-      const lidGeoB = this.geoCache.get('lidB') || this._own(new T.SphereGeometry(ER * 1.025, 40, 14, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2));
+      const lidGeoT = this.geoCache.get('lidT') || this._own(new T.SphereGeometry(ER + LAYER.lid, 48, 16, 0, Math.PI * 2, 0, Math.PI / 2));
+      const lidGeoB = this.geoCache.get('lidB') || this._own(new T.SphereGeometry(ER + LAYER.lid, 48, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2));
       this.geoCache.set('lidT', lidGeoT); this.geoCache.set('lidB', lidGeoB);
       const lidT = new T.Mesh(lidGeoT, clipMats.lid), lidB = new T.Mesh(lidGeoB, clipMats.lid); ball.add(lidT, lidB);
       // A thin crease along each lid edge, like the 2-D lid line.
-      const creaseGeo = this.geoCache.get('crease') || this._own(new T.TorusGeometry(ER * 1.03, .17, 6, 72)); this.geoCache.set('crease', creaseGeo);
+      const creaseGeo = this.geoCache.get('crease') || this._own(new T.TorusGeometry(ER + LAYER.lid + .06, .17, 6, 96)); this.geoCache.set('crease', creaseGeo);
       for (const lid of [lidT, lidB]) { const c = new T.Mesh(creaseGeo, clipMats.crease); c.rotation.x = Math.PI / 2; lid.add(c); }
       const outlineMat = this._std({color: this.frame, transparent: true, opacity: 0});
-      const outline = new T.Mesh(this._own(new T.TorusGeometry(EYE_R, .55, 10, 56)), outlineMat); g.add(outline);
-      return {g, ball, white, pivot, pupil, shines, heart, spiral, lidT, lidB, outline, outlineMat, c, capKey: 1, clip};
+      const outline = new T.Mesh(this._own(new T.TorusGeometry(EYEBALL.base, .55, 10, 56)), outlineMat); outline.position.set(c.x, -c.y, 0); g.add(outline);
+      return {g, ball, white, backShell, pivot, pupil, shines, heart, spiral, lidT, lidB, outline, outlineMat, c, capKey: 1, clip};
     });
     this.bridge = new Chain(T, this.mat.frame, body, this.unit);
     this.coil = new Chain(T, this.mat.frame, body, this.unit);
@@ -205,6 +213,19 @@ export class ThreeRenderer {
     this.blush = [0, 1].map(() => { const m = new T.Mesh(this.unit.sph, this.mat.blush); body.add(m); return m; });
     this.propsGroup = new T.Group(); body.add(this.propsGroup);
     this.fxGroup = new T.Group(); root.add(this.fxGroup);
+  }
+
+  /** Spherical cap whose base circle is the eye's rim seat: 'front' bulges toward the viewer, 'back' away. */
+  _dome(side) {
+    const key = 'dome:' + side;
+    if (!this.geoCache.has(key)) {
+      const T = this.T, {base, r, back} = EYEBALL;
+      let g;
+      if (side === 'front') { g = new T.SphereGeometry(r, 64, 18, 0, Math.PI * 2, 0, Math.asin(base / r)); g.rotateX(Math.PI / 2); }
+      else { const rb = (base * base + back * back) / (2 * back); g = new T.SphereGeometry(rb, 64, 8, 0, Math.PI * 2, 0, Math.asin(base / rb)); g.rotateX(-Math.PI / 2); g.translate(0, 0, rb - back); }
+      this.geoCache.set(key, this._own(g));
+    }
+    return this.geoCache.get(key);
   }
 
   _place(obj, L) {
@@ -221,7 +242,6 @@ export class ThreeRenderer {
     const k = clamp(1 - Math.max(0, -B.y) / 22, .25, 1) * (this.showShadow ? p.shadow : 0);
     this.shadow.visible = k > .01; this.shadow.position.x = B.x; this.shadow.scale.set(36 * k * Math.abs(B.sx), 14 * k, 1); this.shadow.material.opacity = .8 * k;
 
-    const restLen = 12 * clamp(p.bridge.o + p.bridge.coil);
     for (let i = 0; i < 2; i++) {
       const L = p.lens[i], lens = this.lenses[i], e = this.eyes[i], E = p.eyeT[i];
       this._place(lens.g, L); lens.spin.rotation.z = -(L.spin || 0) * DEG; lens.g.updateMatrix();
@@ -234,11 +254,11 @@ export class ThreeRenderer {
       // Brows float just in front of the rim plane.
       const bw = browGeometry(L, p.brow[i], i), bo = this.showBrows ? p.brow[i].o : 0;
       this.brows[i].set(quad(bw.a, bw.c, bw.b, 8, 1.6 + (L.z || 0)), .8 * L.s * clamp(bo * 1.4));
-      this._arm(i, L, p.arm[i], lens.g, restLen);
+      this._arm(i, L, p.arm[i], lens.g);
     }
     this.mat.blush.opacity = .8 * p.blush;
-    const bo = p.bridge.o * (1 - p.bridge.coil), zb = (p.lens[0].z + p.lens[1].z) / 2 + .3;
-    if (bo > .02) { const g = bridgeGeometry(p); this.bridge.set(quad(g.a, g.c, g.b, 10, zb), .62 * clamp(bo * 1.5)); } else this.bridge.set([], 0);
+    const bo = p.bridge.o * (1 - p.bridge.coil), zb = (p.lens[0].z + p.lens[1].z) / 2;
+    if (bo > .02) { const g = bridgeGeometry(p); this.bridge.set(quad(g.a, g.c, g.b, 12, zb), .46 * clamp(bo * 1.5)); } else this.bridge.set([], 0);
     if (p.bridge.coil > .02) {
       const a = lensPoint(p.lens[0], 9.2, -.5), b = lensPoint(p.lens[1], -9.4, .4);
       this.coil.set(coilPoints(a, b, 4.5, 2.3, 90).map(q => ({x: q.x, y: -q.y, z: q.z + zb})), .45 * clamp(p.bridge.coil * 1.5));
@@ -259,45 +279,38 @@ export class ThreeRenderer {
     if (key !== e.capKey) { e.pupil.geometry = this._cap(size); e.capKey = key; }
     e.pupil.visible = round > .05;
     SHINES.forEach((s, k) => {
-      const m = e.shines[k], x = s.x * size, y = -s.y * size, z = Math.sqrt(Math.max(1, R * R - x * x - y * y)) + .1;
+      const m = e.shines[k], x = s.x * size, y = -s.y * size, z = Math.sqrt(Math.max(1, R * R - x * x - y * y)) + LAYER.shine - .03;
       m.visible = round > .3; m.position.set(x, y, z); this.tmp.set(x, y, z).normalize(); m.quaternion.setFromUnitVectors(this.tmp2.set(0, 0, 1), this.tmp);
-      m.scale.set(s.r * size, s.r * size, .22);
+      m.scale.set(s.r * size, s.r * size, .05);
     });
     const hk = q.heart * q.size; e.heart.visible = q.heart > .02; e.heart.scale.set(hk, hk, 1);
     if (q.spiral > .02) {
-      const sp = SPIRAL_PTS, rot = -q.spin * DEG, cs = Math.cos(rot), sn = Math.sin(rot), Rr = R * 1.01;
+      const sp = SPIRAL_PTS, rot = -q.spin * DEG, cs = Math.cos(rot), sn = Math.sin(rot), Rr = R - .2;
       const pts = sp.filter((_, k) => k % 2 === 0).map(v => { const x = (v.x * cs - v.y * sn) * q.size, y = -(v.x * sn + v.y * cs) * q.size; return {x, y, z: Math.sqrt(Math.max(1, Rr * Rr - x * x - y * y))}; });
-      e.spiral.set(pts, .36 * q.spiral);
+      e.spiral.set(pts, .3 * q.spiral);
     } else e.spiral.set([], 0);
     // Lid shells: the visible lid edge sits at height ∓R·sin(angle).
     const tilt = -(i ? -L.tilt : L.tilt) * DEG;
     e.lidT.visible = L.top > .03; e.lidB.visible = L.bot > .03;
-    e.lidT.rotation.set(Math.asin(clamp(2 * L.top - 1, -1, 1)), 0, tilt, 'ZXY');
-    e.lidB.rotation.set(Math.asin(clamp(1 - 2 * L.bot, -1, 1)), 0, 0, 'ZXY');
+    e.lidT.rotation.set(Math.asin(clamp((2 * L.top - 1) * LID_K * 1.08, -1, 1)), 0, tilt, 'ZXY');
+    e.lidB.rotation.set(Math.asin(clamp((1 - 2 * L.bot) * LID_K * 1.08, -1, 1)), 0, 0, 'ZXY');
   }
 
-  _arm(i, L, A, lensGroup, restLen) {
-    // The hinge is the same rim point the 2-D arm grows from, inside the frame's thickness.
-    const T = this.T, side = i ? 1 : -1, at = armAttach(A, i);
-    const hinge = this.tmp.set(at.u, -at.v, 0).applyMatrix4(lensGroup.matrix);
-    const S = {x: hinge.x, y: hinge.y, z: hinge.z};
-    const q = lensGroup.quaternion;
-    const back = new T.Vector3(side * .18, 0, -1).applyQuaternion(q).normalize();
-    const fold = new T.Vector3(-side, 0, -.3).applyQuaternion(q).normalize();
-    const rest = back.lerp(fold, A.fold).normalize();
-    const e = Ease.sine(A.ext * 2.4), g = armGeometry(L, A, i), f = A.fwd * Math.PI / 2;
-    const dir = new T.Vector3(g.dir.x * Math.cos(f), -g.dir.y * Math.cos(f), Math.sin(f)).normalize();
-    const v = rest.clone().lerp(dir, e).normalize();
-    // Length chosen so the tip lands where the 2-D arm's tip is drawn, however far it reaches toward the viewer.
-    const len = lerp(restLen * L.s * (1 - .45 * A.fold), Math.max(g.len / Math.max(Math.cos(f), .3), 1.5), e);
-    if (len < .4) { this.arms[i].set([], 0); return; }
-    const E = {x: S.x + v.x * len, y: S.y + v.y * len, z: S.z + v.z * len};
-    const hd = new T.Vector3(0, -1, -.3).lerp(new T.Vector3(g.H.x - g.E.x, -(g.H.y - g.E.y), 0).normalize(), e).normalize();
-    const hl = ARM.hook * L.s * (1 - .6 * A.fold), side3 = new T.Vector3().crossVectors(v, hd).normalize();
-    const bow = .08 * len;
-    const pts = [S, {x: S.x + v.x * len * .5 + side3.x * bow, y: S.y + v.y * len * .5 + side3.y * bow, z: S.z + v.z * len * .5 + side3.z * bow}, E,
-      {x: E.x + (v.x + hd.x) * hl * .35, y: E.y + (v.y + hd.y) * hl * .35, z: E.z + (v.z + hd.z) * hl * .35}, {x: E.x + hd.x * hl, y: E.y + hd.y * hl, z: E.z + hd.z * hl}];
-    this.arms[i].set(pts, .5 * A.w * L.s);
+  _arm(i, L, A, lensGroup) {
+    // Temples exist only while an action uses them; at rest the glasses show no legs at all.
+    if (A.ext < .03) { this.arms[i].set([], 0); return; }
+    const T = this.T, at = armAttach(A, i), g = armGeometry(L, A, i);
+    // The root is the same rim point the 2-D arm grows from, inside the frame's thickness.
+    const S = new T.Vector3().copy(this.tmp.set(at.u, -at.v, 0).applyMatrix4(lensGroup.matrix));
+    const f = A.fwd * Math.PI / 2, cf = Math.cos(f), v = new T.Vector3(g.dir.x * cf, -g.dir.y * cf, Math.sin(f)).normalize();
+    // Length chosen so the tip lands where the 2-D tip is drawn, however far it reaches toward the viewer.
+    const len = Math.max(g.len / Math.max(cf, .3), .5), E = S.clone().addScaledVector(v, len);
+    const mid = S.clone().add(E).multiplyScalar(.5).add(new T.Vector3(g.M.x - (g.S.x + g.E.x) / 2, -(g.M.y - (g.S.y + g.E.y) / 2), 0));
+    const H = E.clone().add(new T.Vector3(g.H.x - g.E.x, -(g.H.y - g.E.y), 0)), hc = E.clone().addScaledVector(v, E.distanceTo(H) * .5);
+    // One smooth curve: shaft (S → E) then the hooked tip (E → H). No kinks, no visible joints.
+    const bez = (a, c, b, n, from = 0) => Array.from({length: n + 1 - from}, (_, k) => { const t = (k + from) / n, u = 1 - t; return {x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: u * u * a.y + 2 * u * t * c.y + t * t * b.y, z: u * u * a.z + 2 * u * t * c.z + t * t * b.z}; });
+    const pts = bez(S, mid, E, 10).concat(bez(E, hc, H, 6, 1));
+    this.arms[i].set(pts, .5 * A.w * L.s * Ease.out(clamp(A.ext * 4)));
   }
 
   _props(p) {
@@ -311,7 +324,11 @@ export class ThreeRenderer {
         rec = {type};
         if (q.t === 'glyph') rec.node = this._glyph(q.kind, this.propsGroup);
         else if (q.t === 'line') rec.chain = new Chain(T, this._matFor(q.color || 'frame'), this.propsGroup, this.unit);
-        else if (q.t === 'ring') { rec.node = new T.Mesh(this.geoCache.get('prop:ring') || this._own(new T.TorusGeometry(1, .05, 10, 96)), this._matFor(q.color || 'frame')); this.geoCache.set('prop:ring', rec.node.geometry); this.propsGroup.add(rec.node); }
+        else if (q.t === 'ring') {
+          // Orbits never hide what rides on them: drawn first and without writing depth.
+          const m = this._matFor(q.color || 'frame').clone(); m.depthWrite = false; rec.mat = m;
+          rec.node = new T.Mesh(this.unit.sph, m); rec.node.renderOrder = -1; this.propsGroup.add(rec.node);
+        }
         else if (q.t === 'cyl') { rec.node = new T.Mesh(this.unit.sph, this._matFor(q.color || 'frame')); this.propsGroup.add(rec.node); }
         else if (q.t === 'blob') rec.node = null;
         this.props.set(key, rec);
@@ -324,7 +341,11 @@ export class ThreeRenderer {
         const pts = q.pts.map(v => ({x: v.x, y: -v.y, z: v.z ?? -.6}));
         rec.chain.set(q.closed ? pts.concat([pts[0]]) : pts, (q.w || 1) / 2 * o);
       } else if (q.t === 'ring') {
-        rec.node.position.set(q.x, -q.y, 0); rec.node.rotation.set(-q.tilt * DEG, 0, -q.rot * DEG, 'ZYX'); rec.node.scale.setScalar(q.r * Math.max(.001, o));
+        const ratio = Math.round(clamp((q.w || 1) / 2 / Math.max(q.r, .1), .01, .25) * 400) / 400, gk = 'ring:' + ratio;
+        if (!this.geoCache.has(gk)) this.geoCache.set(gk, this._own(new T.TorusGeometry(1, ratio, 12, 120)));
+        rec.node.geometry = this.geoCache.get(gk);
+        rec.node.position.set(q.x, -q.y, 0); rec.node.rotation.set(-q.tilt * DEG, 0, -q.rot * DEG, 'ZYX'); rec.node.scale.setScalar(Math.max(.001, q.r));
+        rec.mat.transparent = o < .999; rec.mat.opacity = o;
       } else if (q.t === 'cyl') {
         // Tapered cylinder from a to b; geometry is shared per taper ratio.
         const n = rec.node, taper = Math.round(clamp(q.r2 / (q.r1 || 1), .05, 4) * 20) / 20, gk = 'cyl:' + taper;
@@ -349,7 +370,7 @@ export class ThreeRenderer {
   _dropProp(rec) {
     if (rec.chain) this.propsGroup.remove(rec.chain.g);
     else if (rec.type.startsWith('g:')) this._dropGlyph(rec.node);
-    else if (rec.node) { this.propsGroup.remove(rec.node); if (rec.type === 'blob') rec.node.geometry.dispose(); }
+    else if (rec.node) { this.propsGroup.remove(rec.node); if (rec.type === 'blob') rec.node.geometry.dispose(); rec.mat?.dispose(); }
   }
 
   _fx(list) {
@@ -373,6 +394,8 @@ export class ThreeRenderer {
     const w = Math.max(1, this.host.clientWidth), h = Math.max(1, this.host.clientHeight), f = 1 + this.bleed * 2;
     this.gl.setSize(Math.round(w * f), Math.round(h * f), false);
     const aspect = w / h, H = 64 / this.zoom * f / Math.min(1, aspect), D = H / (2 * Math.tan(13 * DEG));
+    // A tight near/far range around the character keeps the thin eye layers free of depth fighting.
+    this.camera.near = Math.max(1, D - 140); this.camera.far = D + 240;
     this.camera.aspect = aspect; this.camera.position.set(0, D * .085, D); this.camera.lookAt(0, -1.5, 0); this.camera.updateProjectionMatrix();
   }
   screenToChar(x, y) {

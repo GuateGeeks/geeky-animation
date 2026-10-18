@@ -174,6 +174,28 @@ await test('closer look holds a magnifier handle straight out from the lens cent
   assert.ok(angDiff(fromCentre, at.angle) < 2 * DEG, 'handle points away from the lens centre');
 });
 
+await test('closer look stays steady while the cursor moves', () => {
+  const b = new GeekyBrain({seed: 4, autonomous: false}); b.play('review'); run(b, 1.2);
+  const tips = [];
+  for (let f = 0; f < 180; f++) {
+    b.lookAt(40 * Math.sin(f / 9), 25 * Math.cos(f / 7));
+    const p = b.update(1 / 60), g = armGeometry(p.lens[1], p.arm[1], 1);
+    tips.push({x: p.body.x + g.E.x, y: p.body.y + g.E.y, turn: p.body.turn});
+  }
+  const range = k => Math.max(...tips.map(q => q[k])) - Math.min(...tips.map(q => q[k]));
+  assert.ok(range('x') < 1.6 && range('y') < 1.6, `handle tip drifts ${range('x').toFixed(2)}, ${range('y').toFixed(2)}`);
+  assert.ok(range('turn') < 6, `head turns ${range('turn').toFixed(1)} degrees`);
+});
+
+await test('orbit lenses ride compact orbits in front of the rings', () => {
+  const b = new GeekyBrain({seed: 4, autonomous: false}); b.play('running'); run(b, 1.2);
+  for (let f = 0; f < 180; f++) {
+    const p = b.update(1 / 60);
+    for (const L of p.lens) { assert.ok(L.z > 0, 'lens in front of the orbit plane'); assert.ok(Math.hypot(L.x, L.y) < 14.5, 'compact orbit'); assert.ok(L.s < .56); }
+    for (const q of p.props.filter(q => q.t === 'ring')) assert.ok(q.r <= 14.2 && q.w <= .6, 'slim, compact rings');
+  }
+});
+
 await test('binoculars build depth geometry that projects consistently', () => {
   const b = new GeekyBrain({seed: 2, autonomous: false}); b.play('searching'); const p = run(b, 1.2);
   const cyl = p.props.filter(q => q.t === 'cyl');
