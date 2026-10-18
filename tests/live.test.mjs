@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {GeekyBrain, EXPRESSIONS, neutralPose} from '../src/live/brain.mjs';
 import {ACTIONS, ACTION_LIST, ALIASES, GROUPS, resolveAction} from '../src/live/actions.mjs';
-import {PATHS, GLYPHS, SPIRAL, HEART, parsePath, samplePath, capsulePath, ellipsePath, coilPoints, armGeometry, reachArm, BASE} from '../src/live/core.mjs';
+import {PATHS, GLYPHS, SPIRAL, HEART, parsePath, samplePath, capsulePath, ellipsePath, coilPoints, armGeometry, armAttach, rimRadius, reachArm, projectDepth, BASE, DEG} from '../src/live/core.mjs';
 import {STATE_META, ALIASES as V1_ALIASES} from '../src/geeky-player.mjs';
 import '../src/live/three-renderer.mjs';
 import '../src/live/svg-renderer.mjs';
@@ -126,6 +126,62 @@ await test('shared geometry and glyph paths parse and sample', () => {
   const g = armGeometry(L, A, 1);
   assert.ok(Math.hypot(g.E.x - 26, g.E.y + 14) < .01, 'reach puts the temple tip on target');
   finite(neutralPose());
+});
+
+const angDiff = (a, b) => Math.abs(((a - b) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI);
+const armDir = (A, i) => Math.atan2(-Math.sin(A.ang * DEG), (i ? 1 : -1) * Math.cos(A.ang * DEG));
+
+await test('arms always grow out of the frame band, radially once extended', () => {
+  for (let i = 0; i < 2; i++) {
+    const outer = samplePath(PATHS[i * 2])[0].pts, inner = samplePath(PATHS[i * 2 + 1])[0].pts;
+    for (let k = 0; k < 72; k++) {
+      const r = rimRadius(i, k * 5 * DEG);
+      assert.ok(r > 8.4 && r < 10.2, `lens ${i} band radius ${r}`);
+    }
+    assert.ok(outer.length && inner.length);
+  }
+  for (const a of ACTION_LIST) {
+    const b = new GeekyBrain({seed: 12, autonomous: false}); b.play(a.id);
+    for (let f = 0; f < Math.round(a.duration * 60); f++) {
+      const p = b.update(1 / 60);
+      p.arm.forEach((A, i) => {
+        const at = armAttach(A, i), r = Math.hypot(at.u, at.v);
+        assert.ok(Math.abs(r - rimRadius(i, at.angle)) < 1e-6, `${a.id}: attach off the rim`);
+        if (A.ext >= .45 && A.pin < .01) assert.ok(angDiff(at.angle, armDir(A, i)) < 1 * DEG, `${a.id}: arm not radial`);
+        if (A.pin > .999) assert.ok(angDiff(at.angle, A.at * DEG) < .5 * DEG, `${a.id}: pinned attach moved`);
+      });
+    }
+  }
+});
+
+await test('flutter glides without wobble once under way', () => {
+  for (const id of ['running-right', 'running-left']) {
+    const b = new GeekyBrain({seed: 1, autonomous: false}); b.play(id); run(b, 1.2);
+    const span = {rot: [], y: [], x: [], turn: []};
+    for (let f = 0; f < 120; f++) { const p = b.update(1 / 60); span.rot.push(p.body.rot); span.y.push(p.body.y); span.x.push(p.body.x); span.turn.push(p.lens[0].turn); }
+    const range = v => Math.max(...v) - Math.min(...v);
+    assert.ok(range(span.rot) < 2.5 && range(span.y) < .6 && range(span.x) < .4 && range(span.turn) < .5, `${id} wobbles: ${JSON.stringify(Object.fromEntries(Object.entries(span).map(([k, v]) => [k, range(v).toFixed(2)])))}`);
+    assert.ok(Math.sign(b.last.body.turn) === (id === 'running-right' ? 1 : -1), 'faces the direction of travel');
+  }
+});
+
+await test('closer look holds a magnifier handle straight out from the lens centre', () => {
+  const b = new GeekyBrain({seed: 2, autonomous: false}); b.play('review'); const p = run(b, 1.5), A = p.arm[1];
+  const at = armAttach(A, 1), g = armGeometry(p.lens[1], A, 1);
+  assert.ok(A.pin > .99 && A.ext > .9 && A.w > 2.5);
+  assert.ok(angDiff(at.angle, armDir(A, 1)) < .5 * DEG, 'handle is radial');
+  const fromCentre = Math.atan2(g.E.y - p.lens[1].y, g.E.x - p.lens[1].x);
+  assert.ok(angDiff(fromCentre, at.angle) < 2 * DEG, 'handle points away from the lens centre');
+});
+
+await test('binoculars build depth geometry that projects consistently', () => {
+  const b = new GeekyBrain({seed: 2, autonomous: false}); b.play('searching'); const p = run(b, 1.2);
+  const cyl = p.props.filter(q => q.t === 'cyl');
+  assert.deepEqual(new Set(cyl.map(q => q.key.replace(/\d$/, ''))), new Set(['cup', 'barrel', 'hinge', 'wheel']));
+  for (const q of cyl) { finite(q); assert.ok(q.b.z <= q.a.z + 1e-9 || q.key === 'hinge' || q.key === 'wheel'); }
+  const front = projectDepth(0, 0, 0, 0, 0), back = projectDepth(0, 0, -10, 0, 0);
+  assert.ok(back.y < front.y, 'farther points sit higher, as seen from slightly above');
+  assert.ok(projectDepth(0, 0, -10, 30, 0).x < 0, 'turning right swings the back of the barrels left');
 });
 
 console.log(JSON.stringify({ok: true, tests, scope: 'Node checks of the Geeky Live brain, actions and geometry; renderers are verified in a browser'}));

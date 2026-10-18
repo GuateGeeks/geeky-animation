@@ -36,7 +36,7 @@ export function neutralPose() {
     pupil: two(i => ({x: REST[i].x, y: REST[i].y, size: 1, heart: 0, spiral: 0, spin: 0})),
     lid: two(() => ({top: 0, bot: 0, tilt: 0, tc: .5, bc: .15})),
     brow: two(() => ({y: 0, rot: 0, arch: .45, o: 1})),
-    arm: two(() => ({ext: 0, ang: 0, bend: 35, fwd: 0, w: 1, fold: 0})),
+    arm: two(() => ({ext: 0, ang: 0, bend: 35, fwd: 0, w: 1, fold: 0, at: 0, pin: 0})),
     bridge: {sag: 0, coil: 0, o: 1},
     blush: 0, noBlink: 0, follow: 1, shadow: 1,
     look: {x: 0, y: 0, z: 40, w: 0},
@@ -239,7 +239,7 @@ export class GeekyBrain {
       cue: name => { if (!quiet) brain.emit('cue', {name, action: a.id}); },
       reach: (i, x, y, k = 1, fwd = 0) => {
         if (k <= 0) return;
-        const r = reachArm(p.lens[i], i, x, y, fwd), A = p.arm[i];
+        const A = p.arm[i], r = reachArm(p.lens[i], i, x, y, fwd, A);
         A.ang = lerp(A.ang, r.ang, k); A.ext = lerp(A.ext, r.ext, k); A.fwd = lerp(A.fwd, fwd, k);
       },
       prop: o => { p.props.push({o: 1, layer: 'front', ...o}); }
@@ -385,7 +385,7 @@ export class GeekyBrain {
     for (const b of p.brow) b.o = clamp(b.o);
     p.blush = clamp(p.blush); p.bridge.coil = clamp(p.bridge.coil); p.bridge.o = clamp(p.bridge.o);
     for (const q of p.pupil) { q.heart = clamp(q.heart); q.spiral = clamp(q.spiral); }
-    for (const A of p.arm) { A.ext = clamp(A.ext, 0, 2.2); A.fwd = clamp(A.fwd); A.fold = clamp(A.fold); }
+    for (const A of p.arm) { A.ext = clamp(A.ext, 0, 1.8); A.fwd = clamp(A.fwd); A.fold = clamp(A.fold); A.pin = clamp(A.pin); }
     p.props = p.props.filter(q => q.o > .003);
   }
 

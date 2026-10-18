@@ -214,13 +214,13 @@ export class GeekyAssistant {
     this.play(action || (dir > 0 ? 'running-right' : 'running-left'), action === 'bicycle' ? {params: {dir}} : undefined);
     cancelAnimationFrame(this._moveRaf);
     return new Promise(res => {
-      const t0 = performance.now(); let last = t0, lx = from.x, ly = from.y;
+      // The glide pose carries the motion; no drag physics, so flights stay steady instead of swinging.
+      const t0 = performance.now();
       const step = now => {
         const k = Math.min(1, (now - t0) / 1000 / dur), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-        const nx = from.x + (to.x - from.x) * e, ny = from.y + (to.y - from.y) * e, dt = Math.max(1, now - last) / 1000;
-        this._setPos(nx, ny, free); this.actor.setDrag(true, (nx - lx) / dt, (ny - ly) / dt); lx = nx; ly = ny; last = now;
+        this._setPos(from.x + (to.x - from.x) * e, from.y + (to.y - from.y) * e, free);
         if (k < 1) this._moveRaf = requestAnimationFrame(step);
-        else { this.actor.setDrag(false); this.actor.impact(.5); this.actor.stop(); this._save(); res(); }
+        else { this.actor.impact(.35); this.actor.stop(); this._save(); res(); }
       };
       this._moveRaf = requestAnimationFrame(step);
     });

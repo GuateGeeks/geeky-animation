@@ -3,7 +3,7 @@
    attributes each frame (no innerHTML churn). Draws props and particles from
    the shared glyph library, so the 2-D and 3-D versions stay in sync. */
 import {PATHS, C, FRAME, DEG, clamp, lerp, fmt, PUPIL_ORIGIN, GROUND, GLYPHS, SPIRAL, HEART, PALETTE, color,
-  lensPoint, armGeometry, browGeometry, coilPoints, ellipsePath, capsulePath, polyPath, smoothPath} from './core.mjs';
+  lensPoint, armGeometry, browGeometry, coilPoints, ellipsePath, capsulePath, polyPath, smoothPath, projectDepth} from './core.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const LID_E = 9.4;
@@ -127,7 +127,7 @@ export class SvgRenderer {
       if (show) {
         const g = armGeometry(L, A, i), h = .5 * Math.hypot(g.H.x - g.E.x, g.H.y - g.E.y);
         set(on, 'd', `M${fmt(g.S.x)} ${fmt(g.S.y)}Q${fmt(g.M.x)} ${fmt(g.M.y)} ${fmt(g.E.x)} ${fmt(g.E.y)}Q${fmt(g.E.x + g.dir.x * h)} ${fmt(g.E.y + g.dir.y * h)} ${fmt(g.H.x)} ${fmt(g.H.y)}`);
-        set(on, 'stroke-width', fmt(1.15 * A.w * L.s));
+        set(on, 'stroke-width', fmt(A.w * L.s));
       }
     }
     // Bridge: the original contour, bent between the two lens transforms.
@@ -190,13 +190,15 @@ export class SvgRenderer {
         set(n, 'd', ellipsePath(q.x, q.y, q.r, q.r * Math.cos(q.tilt * DEG), q.rot));
         set(n, 'fill', 'none'); set(n, 'stroke', color(q.color || 'frame', this.frame)); set(n, 'stroke-width', fmt(q.w || 1));
       } else if (q.t === 'line') {
-        set(n, 'd', q.pts.length > 6 ? smoothPath(q.pts) : polyPath(q.pts, q.closed));
+        const pts = q.depth ? q.pts.map(v => projectDepth(v.x, v.y, v.z || 0, B.turn, B.tilt)) : q.pts;
+        set(n, 'd', pts.length > 6 ? smoothPath(pts) : polyPath(pts, q.closed));
         set(n, 'fill', 'none'); set(n, 'stroke', color(q.color || 'frame', this.frame)); set(n, 'stroke-width', fmt(q.w || 1));
       } else if (q.t === 'blob') {
         set(n, 'd', q.d); set(n, 'fill', color(q.fill || 'frame', this.frame));
-      } else if (q.t === 'barrel') {
-        const ox = -Math.sin(B.turn * DEG) * q.len * .9, oy = -q.len * .22;
-        set(n, 'd', capsulePath(q.x, q.y, q.r, q.x + ox, q.y + oy, q.r * .94)); set(n, 'fill', this.frame);
+      } else if (q.t === 'cyl') {
+        // A (tapered) cylinder between two depth points: projected like the 3-D camera sees it.
+        const a = projectDepth(q.a.x, q.a.y, q.a.z || 0, B.turn, B.tilt), b = projectDepth(q.b.x, q.b.y, q.b.z || 0, B.turn, B.tilt);
+        set(n, 'd', capsulePath(a.x, a.y, q.r1, b.x, b.y, q.r2)); set(n, 'fill', color(q.color || 'frame', this.frame));
       }
     }
     for (const [key, rec] of this.props) if (!seen.has(key)) { rec.node.remove(); this.props.delete(key); }

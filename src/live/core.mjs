@@ -97,8 +97,10 @@ export const BASE = [{x: -12.497, y: 2.557}, {x: 12.497, y: -2.557}];
 export const REST = [{x: 2.452, y: -.696}, {x: -2.607, y: .34}];
 export const PUPIL_ORIGIN = [{x: 12.102, y: 14.068}, {x: 32.037, y: 9.99}];
 export const EYE_R = 8.95, RIM_R = 9.75, PUPIL_R = 3.12, MAXR = 4.9;
-export const ARM = {len: 10, hook: 2.6, attach: [{u: -9.55, v: -1.1}, {u: 9.45, v: -1.6}]};
+export const ARM = {len: 10, hook: 2.6, hinge: [-173.4, -9.6]};
 export const GROUND = 16.2;
+/** Eyeball sphere used by the 3-D renderer (radius and centre depth behind the rim plane). */
+export const EYEBALL = {r: 9.5, z: -6.2};
 
 /** Lens-local offset (unscaled, from lens centre) → character/body space, as projected in 2-D. */
 export function lensPoint(L, u, v) {
@@ -107,9 +109,45 @@ export function lensPoint(L, u, v) {
   return {x: L.x + x * c - y * s, y: L.y + x * s + y * c};
 }
 
+const lerpAngle = (a, b, t) => a + ((((b - a) % TAU) + 3 * Math.PI) % TAU - Math.PI) * t;
+
+/** Radius of the frame band (between the original inner and outer contours) every 5°, per lens. */
+const RIM_BAND = [0, 1].map(i => {
+  const ray = (d, a) => {
+    const pts = samplePath(d, 12)[0].pts.map(q => ({x: q.x - C[i].x, y: q.y - C[i].y})), ux = Math.cos(a), uy = Math.sin(a);
+    let best = 0;
+    for (let k = 0; k < pts.length - 1; k++) {
+      const p = pts[k], q = pts[k + 1], ex = q.x - p.x, ey = q.y - p.y, den = ux * ey - uy * ex;
+      if (Math.abs(den) < 1e-9) continue;
+      const t = (p.x * ey - p.y * ex) / den, u = (p.x * uy - p.y * ux) / den;
+      if (t > 0 && u >= 0 && u <= 1) best = Math.max(best, t);
+    }
+    return best;
+  };
+  return Array.from({length: 72}, (_, k) => { const a = k * 5 * DEG; return (ray(PATHS[i * 2], a) + ray(PATHS[i * 2 + 1], a)) / 2; });
+});
+/** Middle of the frame band at a lens-local angle (radians): where a temple-arm grows from. */
+export function rimRadius(i, a) {
+  const f = ((a / DEG / 5) % 72 + 72) % 72, k = Math.floor(f), w = f - k;
+  return lerp(RIM_BAND[i][k], RIM_BAND[i][(k + 1) % 72], w);
+}
+
+/**
+ * Where a temple-arm attaches, in lens-local units. At rest it sits at the temple hinge on the
+ * outer side; as it extends it slides around the rim to emerge radially in the direction it
+ * points, so it always grows out of the frame. `pin` (0–1) locks it to `at` degrees instead.
+ */
+export function armAttach(A, i) {
+  const side = i ? 1 : -1, a = A.ang * DEG, dir = Math.atan2(-Math.sin(a), side * Math.cos(a));
+  let t = lerpAngle(ARM.hinge[i] * DEG, dir, Ease.sine(A.ext * 2.4));
+  if (A.pin > 0) t = lerpAngle(t, (A.at || 0) * DEG, clamp(A.pin));
+  const r = rimRadius(i, t);
+  return {u: r * Math.cos(t), v: r * Math.sin(t), angle: t};
+}
+
 /** Temple-arm polyline in body space: start, end of the main segment and the hooked tip. */
 export function armGeometry(L, A, i) {
-  const side = i ? 1 : -1, at = ARM.attach[i], S = lensPoint(L, at.u, at.v);
+  const side = i ? 1 : -1, at = armAttach(A, i), S = lensPoint(L, at.u, at.v);
   const base = L.rot * DEG, a = A.ang * DEG;
   let dx = side * Math.cos(a), dy = -Math.sin(a);
   [dx, dy] = [dx * Math.cos(base) - dy * Math.sin(base), dx * Math.sin(base) + dy * Math.cos(base)];
@@ -118,15 +156,29 @@ export function armGeometry(L, A, i) {
   const b = side * A.bend * DEG, hx = dx * Math.cos(b) - dy * Math.sin(b), hy = dx * Math.sin(b) + dy * Math.cos(b);
   const hl = ARM.hook * Math.min(1, A.ext * 1.6) * L.s;
   const bow = .12 * len * Math.sin(b * .5);
-  return {S, E, H: {x: E.x + hx * hl, y: E.y + hy * hl}, M: {x: (S.x + E.x) / 2 - dy * bow, y: (S.y + E.y) / 2 + dx * bow}, dir: {x: dx, y: dy}, len};
+  return {S, E, H: {x: E.x + hx * hl, y: E.y + hy * hl}, M: {x: (S.x + E.x) / 2 - dy * bow, y: (S.y + E.y) / 2 + dx * bow}, dir: {x: dx, y: dy}, len, attach: at};
 }
 
-/** Inverse of armGeometry for reaching: arm angle/extension that puts the elbow tip on (tx, ty). */
-export function reachArm(L, i, tx, ty, fwd = 0) {
-  const side = i ? 1 : -1, at = ARM.attach[i], S = lensPoint(L, at.u, at.v);
-  let dx = tx - S.x, dy = ty - S.y; const d = Math.hypot(dx, dy) || 1e-6, r = -L.rot * DEG;
-  [dx, dy] = [dx * Math.cos(r) - dy * Math.sin(r), dx * Math.sin(r) + dy * Math.cos(r)];
-  return {ang: Math.atan2(-dy, side * dx) / DEG, ext: clamp(d / (ARM.len * (1 - .55 * fwd) * L.s), 0, 2.2)};
+/**
+ * Inverse of armGeometry for reaching: the arm grows from the rim point facing the target and
+ * its tip lands on (tx, ty). Honours a pinned attach point.
+ */
+export function reachArm(L, i, tx, ty, fwd = 0, A = {}) {
+  const side = i ? 1 : -1, r = -L.rot * DEG, cr = Math.cos(r), sr = Math.sin(r);
+  let lx = tx - L.x, ly = ty - L.y; [lx, ly] = [lx * cr - ly * sr, lx * sr + ly * cr];
+  const sx = L.s * L.sx * Math.cos(L.turn * DEG) || 1e-3, sy = L.s * L.sy * Math.cos(L.tilt * DEG) || 1e-3;
+  let t = Math.atan2(ly / sy, lx / sx);
+  if (A.pin > 0) t = lerpAngle(t, (A.at || 0) * DEG, clamp(A.pin));
+  const rr = rimRadius(i, t), S = lensPoint(L, rr * Math.cos(t), rr * Math.sin(t));
+  let dx = tx - S.x, dy = ty - S.y; const d = Math.hypot(dx, dy) || 1e-6;
+  [dx, dy] = [dx * cr - dy * sr, dx * sr + dy * cr];
+  return {ang: Math.atan2(-dy, side * dx) / DEG, ext: clamp(d / (ARM.len * (1 - .55 * fwd) * L.s), 0, 1.8)};
+}
+
+/** 2-D projection of a body-space point with depth, matching the 3-D camera: yaw/pitch plus a slight top-down view. */
+export function projectDepth(x, y, z, turn = 0, tilt = 0) {
+  const tt = clamp(Math.tan(turn * DEG), -2.5, 2.5), tp = clamp(Math.tan(tilt * DEG), -2.5, 2.5);
+  return {x: x + z * tt, y: y - z * tp + z * .15};
 }
 
 /** Eyebrow as a quadratic curve {a, c, b} in body space. */
@@ -238,7 +290,7 @@ export const GLYPHS = {
 /** Matte palette shared by every renderer. */
 export const PALETTE = {
   frame: FRAME, white: '#ffffff', paper: '#f8f7fc', lid: '#fdfcff', lid3d: '#e7e1f4', pupil: '#000000', back: '#d9d3ea',
-  lavender: '#a398d5', mist: '#d9d2ee', pink: '#f08fb0', heart: '#e0457b', blush: '#f6a3bf',
+  lavender: '#a398d5', mist: '#d9d2ee', barrel: '#55506f', pink: '#f08fb0', heart: '#e0457b', blush: '#f6a3bf',
   yellow: '#f7c64f', mint: '#79cfb4', sky: '#86bff0', coral: '#f49a7e'
 };
 export const color = (name, frame = FRAME) => name === 'frame' ? frame : PALETTE[name] || name;
