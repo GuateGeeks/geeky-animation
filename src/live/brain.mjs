@@ -38,7 +38,7 @@ export function neutralPose() {
     brow: two(() => ({y: 0, rot: 0, arch: .45, o: 1})),
     arm: two(() => ({ext: 0, ang: 0, bend: 35, fwd: 0, w: 1, fold: 0, at: 0, pin: 0})),
     bridge: {sag: 0, coil: 0, o: 1},
-    blush: 0, noBlink: 0, follow: 1, shadow: 1,
+    blush: 0, noBlink: 0, follow: 1, shadow: 1, steady: 0,
     look: {x: 0, y: 0, z: 40, w: 0},
     pov: two(() => ({x: 0, y: 0, w: 0})),
     props: []
@@ -295,8 +295,10 @@ export class GeekyBrain {
       const L = p.lens[i], J = P.lens[i], k = clamp(P.poke[i].update(dt), -3, 3);
       L.s *= 1 + k * .06; L.sy *= 1 - k * .02;
       // Lenses lag behind body acceleration (overlapping action).
-      L.x += clamp(J.x.update(dt, -axAll * .55), -2.4, 2.4); L.y += clamp(J.y.update(dt, -ayAll * .55), -2.4, 2.4);
-      L.rot += clamp(J.r.update(dt, -axAll * side(i) * .2), -14, 14);
+      // `steady` holds a lens still (a magnifier handle, riding an orbit) instead of letting it lag.
+      const loose = 1 - clamp(p.steady);
+      L.x += clamp(J.x.update(dt, -axAll * .55), -2.4, 2.4) * loose; L.y += clamp(J.y.update(dt, -ayAll * .55), -2.4, 2.4) * loose;
+      L.rot += clamp(J.r.update(dt, -axAll * side(i) * .2), -14, 14) * loose;
     }
     const bl = clamp(P.brow.update(dt, -ayAll * .3), -2, 2); p.brow.forEach(b => { b.y += bl; });
     // Hand spin with inertia, settling on the nearest full turn.
@@ -330,7 +332,7 @@ export class GeekyBrain {
     }
     if (!still) {
       // The head follows the eyes, a little later and a little less.
-      const f = this.att * p.follow, hx = tgt ? clamp(tgt.x / 40, -1, 1) * f : 0, hy = tgt ? clamp(tgt.y / 40, -1, 1) * f : 0;
+      const f = this.att * p.follow * (1 - .7 * clamp(p.steady)), hx = tgt ? clamp(tgt.x / 40, -1, 1) * f : 0, hy = tgt ? clamp(tgt.y / 40, -1, 1) * f : 0;
       B.turn += this.head.turn.update(dt, hx * 16); B.tilt += this.head.tilt.update(dt, -hy * 9);
       B.rot += this.head.rot.update(dt, hx * 2.5); B.x += this.head.x.update(dt, hx * .9);
       this._saccade(dt);

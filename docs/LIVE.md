@@ -7,7 +7,7 @@ One choreography engine (the **brain**) drives two interchangeable bodies:
 | Renderer | What it draws | Dependencies |
 |---|---|---|
 | `svg` | Retained-mode SVG from the original contours. Only attributes change per frame. | None |
-| `three` | Real 3-D: rims extruded from the original contours, spherical eyeballs with rotating pupils, eyelid shells, temples that rest behind the frames and swing forward as arms. | Your `THREE` namespace (r152+; tested with r186) |
+| `three` | Real 3-D: rims extruded from the original contours, lens-shaped eyes seated in the frames (a front dome with pupils that rotate on the sphere and a flush back shell), eyelids with creases, and temples that appear only when an action uses them. | Your `THREE` namespace (r152+; tested with r186) |
 
 Open [`live/index.html`](../live/index.html) for the playground. Every action, mood and control is there, plus a document editor that Geeky reads over your shoulder.
 
@@ -89,7 +89,9 @@ Each frame the brain layers, in order:
 
 Pose channels include `body` (x, y, z, rot, sx, sy, turn, tilt), per-lens transforms plus wheel `spin`, detachable eyeballs, pupils (offset, size, heart, spiral), lids (top, bottom, tilt, crease curvature), brows, temple arms (extension, angle, hook bend, reach toward the viewer, fold, and an optional pinned attach angle), bridge (sag, coil), blush, props and particles. `turn` and `tilt` are true yaw and pitch in 3-D and foreshortening in 2-D. Positive tilt brings the bottom edge toward the viewer.
 
-Temple arms always grow out of the frame. At rest they sit at the hinge on the outer side; as they extend, they slide around the rim and emerge radially in the direction they point. The rim position is sampled from the original contours, so the arms stay attached to the frame band even when a lens is scaled, squashed or turned. An action can pin the attach point instead, which is how the closer-look handle sits straight out from the lens centre like a real magnifier. In 3-D the same rim point is the hinge, and an arm reaching toward the viewer is sized so its tip lands where the 2-D tip is drawn.
+Temple arms always grow out of the frame. At rest they sit at the hinge on the outer side; as they extend, they slide around the rim and emerge radially in the direction they point. The rim position is sampled from the original contours, so the arms stay attached to the frame band even when a lens is scaled, squashed or turned. An action can pin the attach point instead, which is how the closer-look handle sits straight out from the lens centre like a real magnifier. In 3-D the same rim point is the root, and an arm reaching toward the viewer is sized so its tip lands where the 2-D tip is drawn. The 3-D glasses show no temples at rest. When an action extends one, it grows out of the rim as a single smooth curve, shaft and hook together.
+
+In 3-D the eye is a lens-shaped shell rather than a full sphere. A front dome and a flatter back shell share a base circle that sits inside the frame band at mid-depth. From any angle the eye meets the frame with no gap, and from behind the shell starts exactly where the frame does. Pupils, catchlights, heart and spiral pupils, and lids are layered on the dome's sphere with fixed clearances, and the camera's depth range hugs the character so those layers never flicker through one another. The bridge's ends also sit in the middle of the frame band.
 
 Props are renderer-neutral: `ring` (tilted orbit), `line` (stroke, optionally with depth), `blob` (filled path), `glyph` (from the glyph library) and `cyl`, a tapered cylinder between two depth points. The binocular barrels, eyecups, hinge and focus wheel are `cyl` props. 3-D draws real cylinders, and 2-D projects them with the same yaw, pitch and slightly-from-above view as the 3-D camera.
 

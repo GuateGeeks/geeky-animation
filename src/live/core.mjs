@@ -99,8 +99,12 @@ export const PUPIL_ORIGIN = [{x: 12.102, y: 14.068}, {x: 32.037, y: 9.99}];
 export const EYE_R = 8.95, RIM_R = 9.75, PUPIL_R = 3.12, MAXR = 4.9;
 export const ARM = {len: 10, hook: 2.6, hinge: [-173.4, -9.6]};
 export const GROUND = 16.2;
-/** Eyeball sphere used by the 3-D renderer (radius and centre depth behind the rim plane). */
-export const EYEBALL = {r: 9.5, z: -6.2};
+/**
+ * 3-D eye: a dome whose base circle (radius `base`, centred on the aperture) sits inside the frame
+ * band at the rim's mid-depth, bulging `h` toward the viewer. `r`/`z` are its sphere radius and
+ * centre depth, so pupils and lids still move on a true sphere.
+ */
+export const EYEBALL = (() => { const base = 8.9, h = 2.9, r = (base * base + h * h) / (2 * h); return {base, h, r, z: h - r, back: 1.5}; })();
 
 /** Lens-local offset (unscaled, from lens centre) → character/body space, as projected in 2-D. */
 export function lensPoint(L, u, v) {
@@ -191,8 +195,12 @@ export function browGeometry(L, B, i) {
 }
 
 /** Bridge as a quadratic curve between the lenses (used by 3-D; 2-D bends the original contour). */
+const BRIDGE_ENDS = [Math.atan2(-4.65, 7.9), Math.atan2(-1.2, -9.05)];
 export function bridgeGeometry(p) {
-  const a = lensPoint(p.lens[0], 7.9, -4.65), b = lensPoint(p.lens[1], -9.05, -1.2);
+  // Both ends sit in the middle of the frame band, so the bar never pokes past the rims.
+  const ra = rimRadius(0, BRIDGE_ENDS[0]), rb = rimRadius(1, BRIDGE_ENDS[1]);
+  const a = lensPoint(p.lens[0], ra * Math.cos(BRIDGE_ENDS[0]), ra * Math.sin(BRIDGE_ENDS[0]));
+  const b = lensPoint(p.lens[1], rb * Math.cos(BRIDGE_ENDS[1]), rb * Math.sin(BRIDGE_ENDS[1]));
   const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, d = Math.hypot(b.x - a.x, b.y - a.y);
   return {a, b, c: {x: mx - .05 * (b.y - a.y), y: my - .2 * d + p.bridge.sag}};
 }

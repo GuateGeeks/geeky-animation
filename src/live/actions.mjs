@@ -125,23 +125,23 @@ def('waiting', {label: 'Waiting', group: 'classic', dur: 8, loop: true, still: 3
   if (c.at(6.58)) c.cue('startle');
 }});
 
-def('running', {label: 'Orbit', group: 'classic', dur: 3, loop: true, still: 1, desc: 'The frames unfold into an atom and the eyes ride the orbits.', run(c) {
+def('running', {label: 'Orbit', group: 'classic', dur: 3, loop: true, still: 1, desc: 'Geeky becomes an atom: slim orbits round a glowing nucleus, the lenses riding in front.', run(c) {
   const {p, t, T} = c, pre = gate(T, 0, .12, .12, .3), m = Ease.back(clamp((T - .15) / .65)), mc = clamp(m);
-  p.body.sy *= 1 - .1 * pre; p.body.sx *= 1 + .08 * pre; p.body.y -= m; p.body.rot += 3 * Math.sin(TAU * t / 3) * m;
-  const tilt = 72 * DEG;
+  p.body.sy *= 1 - .1 * pre; p.body.sx *= 1 + .08 * pre; p.body.y -= m;
+  const R = 12.6, tilt = 68, prec = TAU * t / 3, rots = [-56 + 4 * Math.sin(prec), 56 + 4 * Math.sin(prec + 2), 4 * Math.sin(prec + 4)];
+  rots.forEach((rot, k) => c.prop({t: 'ring', key: 'orbit' + k, x: 0, y: 0, r: R * (k === 2 ? 1.12 : 1) * (.35 + .65 * mc), rot, tilt, w: .5, o: mc, layer: 'back'}));
+  c.prop({t: 'glyph', key: 'nucleus', kind: 'dot', x: 0, y: 0, s: 2.1 * (1 + .14 * Math.sin(TAU * t * 2)) * mc, color: 'lavender', o: clamp(m * 2), layer: 'back'});
   for (let i = 0; i < 2; i++) {
-    const L = p.lens[i], E = p.eye[i], sg = i ? 1 : -1;
-    L.x = lerp(L.x, 0, m); L.y = lerp(L.y, 0, m); L.s = lerp(1, 1.72, m); L.tilt = 72 * m; L.rot += sg * (52 + 6 * Math.sin(TAU * t / 3 + i)) * m;
-    const a = TAU * t / 1.5 + i * Math.PI, R = RIM_R * 1.72 * .985, ex = R * Math.cos(a), ey = R * Math.sin(a) * Math.cos(tilt), rr = L.rot * DEG;
-    E.detach = clamp(m * 1.4); E.x = L.x + ex * Math.cos(rr) - ey * Math.sin(rr); E.y = L.y + ex * Math.sin(rr) + ey * Math.cos(rr);
-    E.z = R * Math.sin(a) * Math.sin(tilt) * mc; E.s = lerp(1, .5, m) * (1 + E.z * .012);
+    // Each lens, frame and all, rides its own orbit and stays in front of the rings.
+    const L = p.lens[i], a = TAU * t / 1.5 + i * Math.PI, rr = rots[i] * DEG;
+    const ex = R * Math.cos(a), ey = R * Math.sin(a) * Math.cos(tilt * DEG);
+    L.x = lerp(L.x, ex * Math.cos(rr) - ey * Math.sin(rr), m); L.y = lerp(L.y, ex * Math.sin(rr) + ey * Math.cos(rr), m);
+    L.s = lerp(1, .46 * (1 + .1 * Math.sin(a)), m); L.rot *= 1 - mc; L.z = (4 + 2 * Math.sin(a)) * mc;
     p.brow[i].o = 1 - clamp(m * 1.5);
   }
-  p.bridge.o = 1 - clamp(m * 1.5);
-  c.prop({t: 'ring', key: 'orbit', x: 0, y: 0, r: 18.6, rot: 2 * Math.sin(TAU * t / 3), tilt: 73, w: .95, o: mc, layer: 'back'});
-  c.prop({t: 'glyph', key: 'nucleus', kind: 'dot', x: 0, y: 0, s: 2.3 * (1 + .14 * Math.sin(TAU * t * 2)) * mc, color: 'lavender', o: clamp(m * 2), layer: 'back'});
-  c.look(0, 0, m * .6, 70);
-  if (m > .6 && c.every(.045)) for (const E of p.eye) c.fx('dot', {x: E.x, y: E.y, size: .42, life: .42, color: 'lavender', opacity: .55, pop: false, layer: 'back'});
+  p.bridge.o = 1 - clamp(m * 1.5); p.steady = mc;
+  c.look(0, 0, mc, 70);
+  if (m > .6 && c.every(.045)) for (const L of p.lens) c.fx('dot', {x: L.x, y: L.y, size: .38, life: .4, color: 'lavender', opacity: .5, pop: false, layer: 'back'});
   if (c.at(.1)) c.cue('whoosh');
 }});
 
@@ -156,7 +156,7 @@ def('review', {label: 'Closer look', group: 'classic', dur: 4, loop: true, still
   const line = t < 2 ? 0 : 1, lt = (t % 2) / 2, step = lt / .8 * 5;
   const sx = lt < .8 ? -3.3 + 6.6 * (Math.floor(step) / 5 + Ease.out(step % 1) / 5) : lerp(3.3, -3.3, Ease.inOut((lt - .8) / .2));
   L.x = lerp(L.x, -19.5, m); L.y = lerp(L.y, 2.4, m); L.s = lerp(1, .56, m);
-  R.x = lerp(R.x, 6.4, m) + .5 * sx / 3.3 * mc; R.y = lerp(R.y, -4.2, m); R.s = lerp(1, 1.42, m) + .08 * found; R.z = 6 * m; R.rot *= 1 - mc;
+  R.x = lerp(R.x, 6.4, m); R.y = lerp(R.y, -4.2, m); R.s = lerp(1, 1.42, m) + .08 * found; R.z = 6 * m; R.rot *= 1 - mc;
   p.bridge.coil = m;
   // The right temple becomes the handle: pinned to the rim, pointing straight out from the lens centre.
   const H = 52, A = p.arm[1];
@@ -166,6 +166,8 @@ def('review', {label: 'Closer look', group: 'classic', dur: 4, loop: true, still
   c.prop({t: 'line', key: 'collar', pts: [{...c0, z: R.z}, {...c1, z: R.z}], w: 1.4 * A.w * R.s, color: 'frame', o: mc});
   c.prop({t: 'line', key: 'glint', pts: glassArc(R, 200, 248), w: .55 * R.s, color: 'white', o: .85 * mc});
   p.shadow = 1 - .5 * mc;
+  // Hold the glass steady: no lens lag, almost no head-follow, no idle sway on the long handle.
+  p.steady = mc; p.follow = 1 - .85 * mc; p.body.rot = lerp(p.body.rot, 0, mc);
   p.brow[1].y += 1.6 * m + .8 * found; p.brow[0].y -= .5 * m; p.brow[0].rot += 10 * m; p.lid[0].top += .32 * m;
   c.pupil(1, sx, line ? 1.4 : -1.2, m * (1 - found)); c.pupil(0, 3.2, -.8, m);
   p.pupil[1].size = lerp(p.pupil[1].size, 1.3, mc);
