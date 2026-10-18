@@ -26,10 +26,21 @@ Machine-readable details: `tests/asset-results.json`, `tests/render-results.json
 
 Before shipping, run the demo in your supported browsers, mount the React wrapper if used, test multiple avatar instances, pause/reduced motion, small-size readability, background/foreground lifecycle, state interruptions, native bridge messages,local asset loading and texture memory on target devices. Use posters if an animation format is unsupported.
 
+## Geeky Live (interactive SVG + Three.js runtime)
+
+Added after the 1.0.0 kit. Verified on 18 October 2026:
+
+- 13 Node tests (`tests/live.test.mjs`): all 36 actions run frame by frame with finite, bounded poses; pupils stay inside the eyes and lids never overlap; loops keep looping, one-shots return to idle, `goodbye` holds; promises report completion and interruption; seeded runs are identical; random interruption storms stay finite; reduced motion is static and particle-free; poke, drag, impact and hand-spin settle back to rest; every mood applies; gaze converges on near targets; particles are capped; idle fidgets fire; shared path and glyph geometry parses.
+- Headless Chromium 153 with SwiftShader WebGL, driven over the DevTools protocol with real pointer, keyboard and text input: playground and landing load without console errors. The greeting, guided-tour buttons, cursor gaze, poke, context menu, Enter/Space keyboard control, 2-D ↔ 3-D switching, hand-spin with spring-back, pop-out flight, dragging, the letter tip, the hero-to-corner handoff on scroll, `prefers-reduced-motion` (animation loop stops, no particles) and all 36 actions played back to back in the live 3-D renderer all worked. No horizontal scroll at 390 px wide.
+- Frame grids of every action were rendered and inspected in both renderers.
+
+Not covered: real GPUs, Safari and Firefox, touch hardware (long-press and flings were only exercised with mouse input), screen readers, and sound output (the Web Audio code ran, but nothing was listened to).
+
 ## Re-run locally
 
 ```sh
 node tests/player.test.mjs
+node tests/live.test.mjs
 node tools/export-vectors.mjs
 python3 tools/export-assets.py
 python3 tools/validate-assets.py

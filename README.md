@@ -4,6 +4,20 @@
 
 A reusable, editable animation system built from the original Geeky SVG. The original offset glasses, black pupils and two white catchlights are retained. The frames are matte dark indigo. The closer-look coil, orbital loops and flutter transformations are included.
 
+## Geeky Live (new)
+
+A Clippy-style, highly interactive Geeky in **plain SVG** and **Three.js**, driven by one shared animation brain: 36 actions (the classic nine re-choreographed, plus assistant behaviours, feelings, fidgets and a bicycle transformation), eyebrows and temple-arms, a cursor-following gaze with saccades and convergence, blinks, secondary physics, pokes, flings, hand-spins, speech balloons, a context menu, an “Ask Geeky” box, and page awareness — including *“It looks like you’re writing a letter.”*
+
+- Play: [**live/index.html**](live/index.html) · API: [**docs/LIVE.md**](docs/LIVE.md) · Entry: `src/live/index.mjs`
+
+```js
+import {createGeekyAssistant, createGeekyLive} from './src/live/index.mjs';
+createGeekyAssistant({THREE: () => import('./vendor/three/three.module.js')}); // floating companion
+createGeekyLive(document.querySelector('#stage')).play('bicycle');            // one interactive character
+```
+
+The classic player and every exported asset below are unchanged.
+
 ## Start here
 
 1. Open [**demo/index.html**](demo/index.html) for the self-contained interactive demo. It has state, gaze, speed, pause, scrub, size and reduced-motion controls.
@@ -61,7 +75,7 @@ Serve module examples over HTTP in development; browser module loading from file
 
 The canonical editable sources are **src/geeky-motion.mjs** and **src/geeky-player.mjs**. `statePose(state,time)` builds a pose; `character(pose)` renders it. `PATHS` contains the original contours. Change motion poses rather than redrawing the eyes. Keep pupil fills black and preserve both highlight paths.
 
-Run the lightweight player checks with `node tests/player.test.mjs`.
+Run the lightweight player checks with `node tests/player.test.mjs`, and the Geeky Live engine checks with `node tests/live.test.mjs`.
 
 Rebuild the distributed assets from the repository root:
 

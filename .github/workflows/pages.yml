@@ -23,6 +23,8 @@ jobs:
           persist-credentials: false
       - name: Test player
         run: node tests/player.test.mjs
+      - name: Test Geeky Live engine
+        run: node tests/live.test.mjs
       - name: Build static site
         run: python3 tools/build-pages.py
       - name: Check project-site links and artifact
