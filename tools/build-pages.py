@@ -9,8 +9,8 @@ import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / '_site'
-ENTRIES = ('index.html', 'site.css', 'manifest.json', 'assets', 'demo',
-           'dist', 'docs', 'examples', 'src', 'previews')
+ENTRIES = ('index.html', 'site.css', 'site.js', 'manifest.json', 'assets', 'demo',
+           'dist', 'docs', 'examples', 'src', 'previews', 'live', 'vendor')
 EXTENSIONS = {'.html', '.css', '.js', '.mjs', '.json', '.md', '.png', '.svg',
               '.webp', '.gif', '.jpg', '.mp4', '.pdf', '.docx'}
 

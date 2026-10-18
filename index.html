@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Meet Geeky: nine expressive animations, sixteen gaze directions, and an editable, dependency-free animation kit for web and mobile integrations.">
+  <meta name="description" content="Meet Geeky: a Clippy-style animated companion with 36 live actions in plain SVG and Three.js, plus nine exportable classic animations and an editable, dependency-free kit.">
   <meta name="theme-color" content="#34314f">
   <title>Geeky · Animation kit</title>
   <link rel="icon" href="assets/static/Geeky.svg" type="image/svg+xml">
@@ -13,14 +13,24 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header wrap">
     <a class="brand" href="./" aria-label="Geeky home"><img src="assets/static/Geeky.svg" width="42" height="42" alt="">Geeky<span>by GuateGeeks</span></a>
-    <nav aria-label="Main navigation"><a href="demo/index.html">Play</a><a href="#assets">Assets</a><a href="#docs">Docs</a><a href="https://github.com/GuateGeeks/geeky-animation">GitHub ↗</a></nav>
+    <nav aria-label="Main navigation"><a href="live/index.html">Play</a><a href="#live">Live</a><a href="#assets">Assets</a><a href="#docs">Docs</a><a href="https://github.com/GuateGeeks/geeky-animation">GitHub ↗</a></nav>
   </header>
   <main id="main" class="wrap">
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy"><p class="eyebrow">The matte animation kit</p><h1 id="hero-title">A little character.<br>A lot of expression.</h1><p class="lead">Meet Geeky. Original eyes, matte indigo frames, and nine playful ways to bring your interface to life.</p><div class="actions"><a class="button primary" href="demo/index.html">Play with Geeky <span aria-hidden="true">↗</span></a><a class="button" href="docs/Geeky-Animation-Guide.pdf">Read the guide</a></div><p class="fine-print">Editable vectors · Transparent exports · No runtime dependencies</p></div>
-      <div class="hero-art"><img src="assets/states/review/poster.svg" alt="Geeky taking a closer look" width="400" height="400"><span class="art-label">A closer look.</span></div>
+      <div class="hero-copy"><p class="eyebrow">The matte animation kit</p><h1 id="hero-title">A little character.<br>A lot of expression.</h1><p class="lead">Meet Geeky. Original eyes, matte indigo frames, and a whole personality: it follows your cursor, reacts when you poke it, and turns into bikes, binoculars and atoms.</p><div class="actions"><a class="button primary" href="live/index.html">Play with Geeky <span aria-hidden="true">↗</span></a><a class="button" href="demo/index.html" data-geeky-tip="The classic player: nine states, sixteen gazes, frame-exact scrubbing.">Classic player</a></div><p class="fine-print">Plain SVG or Three.js · Editable vectors · Transparent exports</p></div>
+      <div class="hero-art" id="hero-geeky"><img src="assets/states/review/poster.svg" alt="Geeky taking a closer look" width="400" height="400"><span class="art-label" id="hero-label">A closer look.</span></div>
     </section>
-    <section class="facts" aria-label="Kit at a glance"><div><strong>9</strong><span>expressive states</span></div><div><strong>16</strong><span>gaze directions</span></div><div><strong>4 s</strong><span>per animation</span></div></section>
+    <section class="facts" aria-label="Kit at a glance"><div><strong>36</strong><span>live actions</span></div><div><strong>2</strong><span>renderers: SVG &amp; 3-D</span></div><div><strong>9</strong><span>classic exports</span></div></section>
+    <section id="live" class="section" aria-labelledby="live-title">
+      <div class="section-heading"><div><p class="eyebrow">New · Geeky Live</p><h2 id="live-title">It looks like you’re building an interface.</h2></div><p>Would you like help? Geeky Live is a desktop companion in the spirit of Office’s Clippy — with better taste in eyewear.</p></div>
+      <div class="live-grid">
+        <article><h3>Alive at rest</h3><p>Breathing, saccades, blinks, eyebrows and a gaze that follows your cursor. Every move anticipates, overshoots and settles.</p></article>
+        <article><h3>Hands-on</h3><p>Poke it, fling it, spin it in 3-D. The frames swing, stretch and squash; five quick clicks make it dizzy.</p></article>
+        <article><h3>Page-aware</h3><p>Reads along as you type, offers help with letters, notices copies, scrolling, idling and hovering <code>data-geeky-tip</code>.</p></article>
+        <article><h3>Two bodies, one brain</h3><p>A retained-mode SVG renderer and a Three.js renderer share one choreography engine, so every action exists in both.</p></article>
+      </div>
+      <div class="resource-strip"><div><h3>Drop it into any page.</h3><p><code>createGeekyAssistant({THREE: () =&gt; import('three')})</code> — or <code>createGeekyLive(el)</code> for a single interactive character.</p></div><div class="downloads"><a href="live/index.html">Open the playground</a><a href="docs/LIVE.md">Live API</a><a href="src/live/index.mjs" data-geeky-tip="One import gives you the actor, the assistant, the brain and both renderers.">Module entry</a></div></div>
+    </section>
     <section id="assets" class="section" aria-labelledby="assets-title">
       <div class="section-heading"><div><p class="eyebrow">Choose an expression</p><h2 id="assets-title">Ready for your next idea.</h2></div><p>Start with a vector, an animated image, or a transparent sprite sheet. These previews are stills; open the demo to see them move.</p></div>
       <div class="state-grid">
@@ -28,7 +38,7 @@
         <img src="assets/states/idle/poster.webp" alt="Geeky: Curious" width="256" height="256" loading="lazy">
         <h3>Curious</h3><p class="state-id">idle</p>
         <div class="downloads" aria-label="Curious downloads">
-          <a href="assets/states/idle/animation.svg">SVG</a><a href="assets/states/idle/animation.webp">WebP</a><a href="assets/states/idle/animation.gif">GIF</a><a href="assets/states/idle/sprites.png">Sprite sheet</a>
+          <a href="assets/states/idle/animation.svg" data-geeky-tip="Animated SVGs play anywhere an image does: no script needed.">SVG</a><a href="assets/states/idle/animation.webp">WebP</a><a href="assets/states/idle/animation.gif">GIF</a><a href="assets/states/idle/sprites.png">Sprite sheet</a>
         </div>
       </article>
       <article class="state-card">
@@ -88,7 +98,7 @@
         </div>
       </article>
       </div>
-      <div class="resource-strip"><div><h3>Point Geeky in any direction.</h3><p>Sixteen gazes, a neutral avatar, and exact dimensions and timing in the manifest.</p></div><div class="downloads"><a href="assets/gaze/gaze-sprites.png">Gaze sprite sheet</a><a href="assets/static/Geeky.svg">Neutral SVG</a><a href="manifest.json">Asset manifest</a></div></div>
+      <div class="resource-strip"><div><h3>Point Geeky in any direction.</h3><p>Sixteen gazes, a neutral avatar, and exact dimensions and timing in the manifest.</p></div><div class="downloads"><a href="assets/gaze/gaze-sprites.png" data-geeky-tip="Sixteen directions of me, looking at things. Very useful for pointing at buttons.">Gaze sprite sheet</a><a href="assets/static/Geeky.svg">Neutral SVG</a><a href="manifest.json">Asset manifest</a></div></div>
     </section>
     <section id="docs" class="section" aria-labelledby="docs-title">
       <div class="section-heading"><div><p class="eyebrow">Make it yours</p><h2 id="docs-title">From first look to integration.</h2></div><p>Use the ready-made player or build on the editable motion rig. The player respects reduced-motion preferences.</p></div>
@@ -101,5 +111,6 @@
     <aside class="closing-note"><strong>Small details matter.</strong><p>Original black pupils and white catchlights are preserved throughout. The standalone animated files loop; use posters when reduced motion is preferred. Native device testing remains part of your app integration.</p></aside>
   </main>
   <footer class="wrap site-footer"><span>Geeky · Matte edition</span><a href="https://github.com/GuateGeeks/geeky-animation">Source, examples &amp; project updates ↗</a></footer>
+  <script type="module" src="site.js"></script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 # Geeky web player API
 
+This is the classic, asset-matched player. For the interactive Clippy-style runtime (SVG and Three.js), see [LIVE.md](LIVE.md).
+
 ## Imports
 
 ```js

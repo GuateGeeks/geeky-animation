@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geeky Live · Minimal example</title><link rel="icon" href="../../assets/static/Geeky.svg" type="image/svg+xml">
+<style>body{font:16px/1.5 system-ui,sans-serif;background:#f8f7fc;color:#34314f;margin:0;padding:24px}#stage{width:260px;height:260px}button{font:inherit;padding:8px 12px;margin:4px;border:1px solid #d6cde5;border-radius:10px;background:#fff;cursor:pointer}textarea{width:min(520px,100%);height:90px;font:inherit;padding:10px;border:1px solid #d6cde5;border-radius:10px}</style></head>
+<body>
+<h1>Geeky Live, minimal</h1>
+<div id="stage"></div>
+<p><button id="bike">Ride a bike</button><button id="three">Switch to 3-D</button><button id="hello" data-geeky-tip="Hover tips like this come from data-geeky-tip.">Say hello</button></p>
+<p><textarea placeholder="Type “Dear …” to meet the assistant’s favourite tip."></textarea></p>
+<script type="module">
+import {createGeekyLive, createGeekyAssistant} from '../../src/live/index.mjs';
+const loadThree = () => import('../../vendor/three/three.module.js');
+
+// One interactive character on a stage: follows the cursor, poke it, drag to spin.
+const actor = createGeekyLive(document.querySelector('#stage'));
+document.querySelector('#bike').onclick = () => actor.play('bicycle');
+document.querySelector('#three').onclick = async () => actor.setRenderer('three', {THREE: await loadThree()});
+
+// The floating Clippy-style companion.
+const assistant = createGeekyAssistant({THREE: loadThree, greeting: false, storageKey: 'geeky-example'});
+document.querySelector('#hello').onclick = () => assistant.say('Hello from the corner!', {action: 'waving'});
+// Call actor.destroy() and assistant.destroy() when the page or component goes away.
+</script>
+</body></html>
