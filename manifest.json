@@ -1,0 +1,677 @@
+{
+  "schema": "geeky-animation-kit",
+  "version": "1.0.0",
+  "character": "Geeky",
+  "style": {
+    "frame": "#34314f",
+    "pupils": "#000000",
+    "eyes": "#ffffff",
+    "originalEyePaths": true,
+    "metallic": false
+  },
+  "coordinates": {
+    "viewBox": [
+      -30,
+      -30,
+      60,
+      60
+    ],
+    "registration": "fixed center, identical across every exported frame",
+    "gaze": {
+      "units": "degrees",
+      "zero": "up",
+      "positive": "clockwise as viewed",
+      "right": 90,
+      "down": 180,
+      "left": 270,
+      "steps": 16,
+      "stepDegrees": 22.5,
+      "null": "natural animation gaze"
+    }
+  },
+  "source": {
+    "original": "assets/original/Geeky-Original.svg",
+    "rig": "src/geeky-motion.mjs",
+    "player": "src/geeky-player.mjs",
+    "browserBuild": "dist/geeky-player.js"
+  },
+  "static": {
+    "svg": "assets/static/Geeky.svg",
+    "png": "assets/static/Geeky.png",
+    "webp": "assets/static/Geeky.webp"
+  },
+  "states": [
+    {
+      "id": "idle",
+      "label": "Curious",
+      "durationMs": 4000,
+      "defaultLoop": true,
+      "posterTimeMs": 1500,
+      "aliases": [],
+      "files": {
+        "animation_svg": "assets/states/idle/animation.svg",
+        "animation_gif": "assets/states/idle/animation.gif",
+        "animation_webp": "assets/states/idle/animation.webp",
+        "poster_svg": "assets/states/idle/poster.svg",
+        "poster_png": "assets/states/idle/poster.png",
+        "poster_webp": "assets/states/idle/poster.webp",
+        "sprites_png": "assets/states/idle/sprites.png",
+        "sprites_webp": "assets/states/idle/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "running-right",
+      "label": "Flutter right",
+      "durationMs": 4000,
+      "defaultLoop": true,
+      "posterTimeMs": 1500,
+      "aliases": [
+        "flutter-right"
+      ],
+      "files": {
+        "animation_svg": "assets/states/running-right/animation.svg",
+        "animation_gif": "assets/states/running-right/animation.gif",
+        "animation_webp": "assets/states/running-right/animation.webp",
+        "poster_svg": "assets/states/running-right/poster.svg",
+        "poster_png": "assets/states/running-right/poster.png",
+        "poster_webp": "assets/states/running-right/poster.webp",
+        "sprites_png": "assets/states/running-right/sprites.png",
+        "sprites_webp": "assets/states/running-right/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "running-left",
+      "label": "Flutter left",
+      "durationMs": 4000,
+      "defaultLoop": true,
+      "posterTimeMs": 1500,
+      "aliases": [
+        "flutter-left"
+      ],
+      "files": {
+        "animation_svg": "assets/states/running-left/animation.svg",
+        "animation_gif": "assets/states/running-left/animation.gif",
+        "animation_webp": "assets/states/running-left/animation.webp",
+        "poster_svg": "assets/states/running-left/poster.svg",
+        "poster_png": "assets/states/running-left/poster.png",
+        "poster_webp": "assets/states/running-left/poster.webp",
+        "sprites_png": "assets/states/running-left/sprites.png",
+        "sprites_webp": "assets/states/running-left/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "waving",
+      "label": "Hello",
+      "durationMs": 4000,
+      "defaultLoop": false,
+      "posterTimeMs": 1500,
+      "aliases": [
+        "hello"
+      ],
+      "files": {
+        "animation_svg": "assets/states/waving/animation.svg",
+        "animation_gif": "assets/states/waving/animation.gif",
+        "animation_webp": "assets/states/waving/animation.webp",
+        "poster_svg": "assets/states/waving/poster.svg",
+        "poster_png": "assets/states/waving/poster.png",
+        "poster_webp": "assets/states/waving/poster.webp",
+        "sprites_png": "assets/states/waving/sprites.png",
+        "sprites_webp": "assets/states/waving/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "jumping",
+      "label": "Delight",
+      "durationMs": 4000,
+      "defaultLoop": false,
+      "posterTimeMs": 1500,
+      "aliases": [
+        "delight"
+      ],
+      "files": {
+        "animation_svg": "assets/states/jumping/animation.svg",
+        "animation_gif": "assets/states/jumping/animation.gif",
+        "animation_webp": "assets/states/jumping/animation.webp",
+        "poster_svg": "assets/states/jumping/poster.svg",
+        "poster_png": "assets/states/jumping/poster.png",
+        "poster_webp": "assets/states/jumping/poster.webp",
+        "sprites_png": "assets/states/jumping/sprites.png",
+        "sprites_webp": "assets/states/jumping/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 34,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 34,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "failed",
+      "label": "Oops",
+      "durationMs": 4000,
+      "defaultLoop": false,
+      "posterTimeMs": 1500,
+      "aliases": [
+        "oops"
+      ],
+      "files": {
+        "animation_svg": "assets/states/failed/animation.svg",
+        "animation_gif": "assets/states/failed/animation.gif",
+        "animation_webp": "assets/states/failed/animation.webp",
+        "poster_svg": "assets/states/failed/poster.svg",
+        "poster_png": "assets/states/failed/poster.png",
+        "poster_webp": "assets/states/failed/poster.webp",
+        "sprites_png": "assets/states/failed/sprites.png",
+        "sprites_webp": "assets/states/failed/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 15,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 15,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "waiting",
+      "label": "Waiting",
+      "durationMs": 4000,
+      "defaultLoop": true,
+      "posterTimeMs": 1500,
+      "aliases": [],
+      "files": {
+        "animation_svg": "assets/states/waiting/animation.svg",
+        "animation_gif": "assets/states/waiting/animation.gif",
+        "animation_webp": "assets/states/waiting/animation.webp",
+        "poster_svg": "assets/states/waiting/poster.svg",
+        "poster_png": "assets/states/waiting/poster.png",
+        "poster_webp": "assets/states/waiting/poster.webp",
+        "sprites_png": "assets/states/waiting/sprites.png",
+        "sprites_webp": "assets/states/waiting/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "running",
+      "label": "Orbit",
+      "durationMs": 4000,
+      "defaultLoop": true,
+      "posterTimeMs": 1000,
+      "aliases": [
+        "orbit"
+      ],
+      "files": {
+        "animation_svg": "assets/states/running/animation.svg",
+        "animation_gif": "assets/states/running/animation.gif",
+        "animation_webp": "assets/states/running/animation.webp",
+        "poster_svg": "assets/states/running/poster.svg",
+        "poster_png": "assets/states/running/poster.png",
+        "poster_webp": "assets/states/running/poster.webp",
+        "sprites_png": "assets/states/running/sprites.png",
+        "sprites_webp": "assets/states/running/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    },
+    {
+      "id": "review",
+      "label": "Closer look",
+      "durationMs": 4000,
+      "defaultLoop": true,
+      "posterTimeMs": 1500,
+      "aliases": [
+        "closer-look"
+      ],
+      "files": {
+        "animation_svg": "assets/states/review/animation.svg",
+        "animation_gif": "assets/states/review/animation.gif",
+        "animation_webp": "assets/states/review/animation.webp",
+        "poster_svg": "assets/states/review/poster.svg",
+        "poster_png": "assets/states/review/poster.png",
+        "poster_webp": "assets/states/review/poster.webp",
+        "sprites_png": "assets/states/review/sprites.png",
+        "sprites_webp": "assets/states/review/sprites.webp"
+      },
+      "sprite": {
+        "frameWidth": 128,
+        "frameHeight": 128,
+        "columns": 8,
+        "rows": 12,
+        "frameCount": 96,
+        "fps": 24,
+        "order": "row-major",
+        "width": 1024,
+        "height": 1536
+      },
+      "animatedRaster": {
+        "width": 256,
+        "height": 256,
+        "fps": 12,
+        "loop": true,
+        "sampleCount": 48,
+        "encoded": {
+          "gif": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          },
+          "webp": {
+            "encodedFrameCount": 47,
+            "durationMs": 4000
+          }
+        }
+      }
+    }
+  ],
+  "gazes": [
+    {
+      "index": 0,
+      "degrees": 0,
+      "svg": "assets/gaze/gaze-000.svg",
+      "png": "assets/gaze/gaze-000.png",
+      "webp": "assets/gaze/gaze-000.webp",
+      "sprite": {
+        "column": 0,
+        "row": 0
+      }
+    },
+    {
+      "index": 1,
+      "degrees": 22.5,
+      "svg": "assets/gaze/gaze-022_5.svg",
+      "png": "assets/gaze/gaze-022_5.png",
+      "webp": "assets/gaze/gaze-022_5.webp",
+      "sprite": {
+        "column": 1,
+        "row": 0
+      }
+    },
+    {
+      "index": 2,
+      "degrees": 45,
+      "svg": "assets/gaze/gaze-045.svg",
+      "png": "assets/gaze/gaze-045.png",
+      "webp": "assets/gaze/gaze-045.webp",
+      "sprite": {
+        "column": 2,
+        "row": 0
+      }
+    },
+    {
+      "index": 3,
+      "degrees": 67.5,
+      "svg": "assets/gaze/gaze-067_5.svg",
+      "png": "assets/gaze/gaze-067_5.png",
+      "webp": "assets/gaze/gaze-067_5.webp",
+      "sprite": {
+        "column": 3,
+        "row": 0
+      }
+    },
+    {
+      "index": 4,
+      "degrees": 90,
+      "svg": "assets/gaze/gaze-090.svg",
+      "png": "assets/gaze/gaze-090.png",
+      "webp": "assets/gaze/gaze-090.webp",
+      "sprite": {
+        "column": 0,
+        "row": 1
+      }
+    },
+    {
+      "index": 5,
+      "degrees": 112.5,
+      "svg": "assets/gaze/gaze-112_5.svg",
+      "png": "assets/gaze/gaze-112_5.png",
+      "webp": "assets/gaze/gaze-112_5.webp",
+      "sprite": {
+        "column": 1,
+        "row": 1
+      }
+    },
+    {
+      "index": 6,
+      "degrees": 135,
+      "svg": "assets/gaze/gaze-135.svg",
+      "png": "assets/gaze/gaze-135.png",
+      "webp": "assets/gaze/gaze-135.webp",
+      "sprite": {
+        "column": 2,
+        "row": 1
+      }
+    },
+    {
+      "index": 7,
+      "degrees": 157.5,
+      "svg": "assets/gaze/gaze-157_5.svg",
+      "png": "assets/gaze/gaze-157_5.png",
+      "webp": "assets/gaze/gaze-157_5.webp",
+      "sprite": {
+        "column": 3,
+        "row": 1
+      }
+    },
+    {
+      "index": 8,
+      "degrees": 180,
+      "svg": "assets/gaze/gaze-180.svg",
+      "png": "assets/gaze/gaze-180.png",
+      "webp": "assets/gaze/gaze-180.webp",
+      "sprite": {
+        "column": 0,
+        "row": 2
+      }
+    },
+    {
+      "index": 9,
+      "degrees": 202.5,
+      "svg": "assets/gaze/gaze-202_5.svg",
+      "png": "assets/gaze/gaze-202_5.png",
+      "webp": "assets/gaze/gaze-202_5.webp",
+      "sprite": {
+        "column": 1,
+        "row": 2
+      }
+    },
+    {
+      "index": 10,
+      "degrees": 225,
+      "svg": "assets/gaze/gaze-225.svg",
+      "png": "assets/gaze/gaze-225.png",
+      "webp": "assets/gaze/gaze-225.webp",
+      "sprite": {
+        "column": 2,
+        "row": 2
+      }
+    },
+    {
+      "index": 11,
+      "degrees": 247.5,
+      "svg": "assets/gaze/gaze-247_5.svg",
+      "png": "assets/gaze/gaze-247_5.png",
+      "webp": "assets/gaze/gaze-247_5.webp",
+      "sprite": {
+        "column": 3,
+        "row": 2
+      }
+    },
+    {
+      "index": 12,
+      "degrees": 270,
+      "svg": "assets/gaze/gaze-270.svg",
+      "png": "assets/gaze/gaze-270.png",
+      "webp": "assets/gaze/gaze-270.webp",
+      "sprite": {
+        "column": 0,
+        "row": 3
+      }
+    },
+    {
+      "index": 13,
+      "degrees": 292.5,
+      "svg": "assets/gaze/gaze-292_5.svg",
+      "png": "assets/gaze/gaze-292_5.png",
+      "webp": "assets/gaze/gaze-292_5.webp",
+      "sprite": {
+        "column": 1,
+        "row": 3
+      }
+    },
+    {
+      "index": 14,
+      "degrees": 315,
+      "svg": "assets/gaze/gaze-315.svg",
+      "png": "assets/gaze/gaze-315.png",
+      "webp": "assets/gaze/gaze-315.webp",
+      "sprite": {
+        "column": 2,
+        "row": 3
+      }
+    },
+    {
+      "index": 15,
+      "degrees": 337.5,
+      "svg": "assets/gaze/gaze-337_5.svg",
+      "png": "assets/gaze/gaze-337_5.png",
+      "webp": "assets/gaze/gaze-337_5.webp",
+      "sprite": {
+        "column": 3,
+        "row": 3
+      }
+    }
+  ],
+  "gazeSprite": {
+    "png": "assets/gaze/gaze-sprites.png",
+    "webp": "assets/gaze/gaze-sprites.webp",
+    "frameWidth": 128,
+    "frameHeight": 128,
+    "columns": 4,
+    "rows": 4,
+    "frameCount": 16,
+    "width": 512,
+    "height": 512,
+    "order": "row-major"
+  },
+  "preview": "previews/Geeky-Matte-Showcase.mp4",
+  "docs": {
+    "guide": "docs/Geeky-Animation-Guide.pdf",
+    "editableGuide": "docs/Geeky-Animation-Guide.docx",
+    "api": "docs/API.md",
+    "assets": "docs/ASSETS.md",
+    "tests": "docs/TEST-REPORT.md"
+  },
+  "notes": [
+    "Animated SVG, GIF and WebP assets repeat indefinitely; runtime state defaults are separate.",
+    "GIF uses binary transparency and centisecond timing; SVG/PNG/WebP preserve smooth alpha.",
+    "This reusable vector kit is separate from the image-generated dot pet sprite sheet.",
+    "Native WebView shells and native sprite playback are integration work, not prebuilt SDKs."
+  ]
+}

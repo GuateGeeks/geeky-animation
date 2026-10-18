@@ -1,0 +1,162 @@
+{
+  "ok": true,
+  "states": [
+    {
+      "state": "idle",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "running-right",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "running-left",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "waving",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "jumping",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 34,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 34,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "failed",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 15,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 15,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "waiting",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "running",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    },
+    {
+      "state": "review",
+      "SMILComparedFrames": 8,
+      "meanPixelErrorMax": 0.0,
+      "animation": {
+        "gif": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        },
+        "webp": {
+          "encodedFrameCount": 47,
+          "durationMs": 4000
+        }
+      },
+      "pathsValid": true,
+      "spriteAlphaAndDimensions": true
+    }
+  ],
+  "notes": [
+    "SMIL values evaluated numerically and rendered through librsvg; this is not a live-browser test.",
+    "96 source frames/state rendered and bounds-checked during export."
+  ]
+}

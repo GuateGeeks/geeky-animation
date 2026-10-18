@@ -1,0 +1,107 @@
+{
+  "states": [
+    {
+      "id": "failed",
+      "svg": true,
+      "webpFrames": 15,
+      "gifFrames": 15,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "idle",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "jumping",
+      "svg": true,
+      "webpFrames": 34,
+      "gifFrames": 34,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "review",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "running-left",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "running-right",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "running",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "waiting",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    },
+    {
+      "id": "waving",
+      "svg": true,
+      "webpFrames": 47,
+      "gifFrames": 47,
+      "spriteSize": [
+        1024,
+        1536
+      ],
+      "allFramesInBounds": true
+    }
+  ],
+  "gazes": 16,
+  "renderEngine": "librsvg + cairo",
+  "alpha": "unpremultiplied RGBA",
+  "bounds": []
+}

@@ -1,0 +1,5 @@
+{
+  "ok": true,
+  "tests": 15,
+  "scope": "Mock DOM API/lifecycle tests; not a browser rendering test"
+}

@@ -1,0 +1,16 @@
+PASS initial source rendering
+PASS all canonical states
+PASS aliases resolve
+PASS pause holds time
+PASS resume advances
+PASS seek and speed bounds
+PASS all16 gaze values and wrap
+PASS one-shot completes exactly once
+PASS loop wraps without completion
+PASS transition interruptions stay finite
+PASS reduced motion is static
+PASS system preference updates
+PASS hidden document stops scheduling
+PASS input guards
+PASS destroy is idempotent and cleans up
+{"ok":true,"tests":15,"scope":"Mock DOM API/lifecycle tests; not a browser rendering test"}

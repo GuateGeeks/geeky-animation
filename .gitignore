@@ -1,0 +1,15 @@
+# Disposable export and Python caches
+.export/
+__pycache__/
+*.py[cod]
+
+# Local dependencies and operating-system metadata
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Local credentials and environment files
+.env
+.env.*
+*.pem
+*.key
