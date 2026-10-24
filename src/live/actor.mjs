@@ -106,6 +106,8 @@ export class GeekyActor {
       this.renderer = new ThreeRenderer(this.host, {...o, THREE: this.opts.THREE});
     } else if (kind === 'svg') this.renderer = new SvgRenderer(this.host, o);
     else throw new RangeError(`Unknown Geeky renderer: ${kind}`);
+    // Keep vertical page scrolling available when a touch starts on the stage.
+    if (this.renderer.svg) this.renderer.svg.style.touchAction = 'pan-y';
     this.renderer.render(this.brain.last || this.brain.update(0), []);
   }
 
@@ -142,6 +144,8 @@ export class GeekyActor {
 
   _bind() {
     const host = this.host, win = globalThis.window, doc = globalThis.document;
+    const previousTouchAction = host.style.touchAction;
+    host.style.touchAction = 'pan-y';
     const move = e => {
       if (!this.opts.followPointer || this._lookEl || this.brain.reduced) return;
       const c = this.renderer.screenToChar(e.clientX, e.clientY);
@@ -151,7 +155,7 @@ export class GeekyActor {
     };
     const leave = () => { if (!this._lookEl) this.brain.targetT = this.brain.time - 2; };
     const down = e => {
-      if (!this.opts.interactive || !this.hit(e.clientX, e.clientY)) return;
+      if (!this.opts.interactive || e.button !== 0 || this._ptr || !this.hit(e.clientX, e.clientY)) return;
       this._ptr = {id: e.pointerId, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, t: performance.now(), moved: false};
       if (this.opts.dragMode === 'spin') { host.setPointerCapture?.(e.pointerId); host.style.cursor = 'grabbing'; }
     };
@@ -167,6 +171,8 @@ export class GeekyActor {
     const up = e => {
       const P = this._ptr; if (!P || P.id !== e.pointerId) return;
       this._ptr = null; this.brain.releaseSpin(); host.style.cursor = this._hover ? 'grab' : '';
+      if (host.hasPointerCapture?.(e.pointerId)) host.releasePointerCapture(e.pointerId);
+      if (e.type === 'pointercancel' || e.type === 'lostpointercapture') return;
       if (!P.moved) this._tap(e);
       else this._emit('spin', {});
     };
@@ -177,13 +183,16 @@ export class GeekyActor {
     win.addEventListener('pointermove', move, {passive: true});
     doc.documentElement.addEventListener('pointerleave', leave);
     host.addEventListener('pointerdown', down); win.addEventListener('pointermove', drag, {passive: true});
-    win.addEventListener('pointerup', up); win.addEventListener('pointercancel', up); host.addEventListener('dblclick', dbl);
+    win.addEventListener('pointerup', up); win.addEventListener('pointercancel', up); host.addEventListener('lostpointercapture', up); host.addEventListener('dblclick', dbl);
     doc.addEventListener('visibilitychange', vis); this._media?.addEventListener?.('change', media); ro?.observe(host);
     this._unbind = () => {
       win.removeEventListener('pointermove', move); doc.documentElement.removeEventListener('pointerleave', leave);
       host.removeEventListener('pointerdown', down); win.removeEventListener('pointermove', drag);
-      win.removeEventListener('pointerup', up); win.removeEventListener('pointercancel', up); host.removeEventListener('dblclick', dbl);
+      win.removeEventListener('pointerup', up); win.removeEventListener('pointercancel', up); host.removeEventListener('lostpointercapture', up); host.removeEventListener('dblclick', dbl);
       doc.removeEventListener('visibilitychange', vis); this._media?.removeEventListener?.('change', media); ro?.disconnect();
+      const pointer = this._ptr; this._ptr = null;
+      if (pointer) { this.brain.releaseSpin(); if (host.hasPointerCapture?.(pointer.id)) host.releasePointerCapture(pointer.id); }
+      host.style.touchAction = previousTouchAction;
     };
   }
 

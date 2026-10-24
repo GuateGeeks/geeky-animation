@@ -59,7 +59,7 @@ The assistant also accepts a lazy loader (`THREE: () => import('three')`), so th
 
 ## Actions
 
-36 actions in five groups. The classic nine keep their v1 IDs and aliases, so `hello`, `delight`, `oops`, `orbit`, `closer-look` and `flutter-right` all still work.
+50 actions in seven groups. The 14 additions are documented in [Technology & GuateGeeks animations](TECHNOLOGY-ANIMATIONS.md); all original 36 performances retain their choreography. The classic nine keep their v1 IDs and aliases, so `hello`, `delight`, `oops`, `orbit`, `closer-look` and `flutter-right` all still work.
 
 | Group | IDs |
 |---|---|
@@ -68,6 +68,8 @@ The assistant also accepts a lazy loader (`THREE: () => import('three')`), so th
 | Feelings | `celebrate`, `love`, `dizzy`, `sleep` ↻, `wake`, `surprised`, `confused`, `sad`, `giggle`, `shrug`, `nod`, `shake` |
 | Idle fidgets | `look-around`, `yawn`, `polish`, `adjust` |
 | Transformations | `bicycle` ↻ |
+| Technology lab · New | `tech-portal`, `tech-blueprint`, `tech-debug`, `tech-reboot`, `tech-connect`, `tech-network` ↻, `tech-focus` ↻, `tech-build`, `tech-peek`, `tech-compile`, `tech-compress`, `tech-deploy` |
+| GuateGeeks learning · New | `gg-certificate`, `gg-mentor` |
 
 ↻ loops until another action plays. Everything else plays once and returns to the base loop (`idle`, or whatever `setBase()` chose). Extra aliases: `knock`, `bike`, `binoculars`, `search`, `think`, `write`, `yes`, `no`, `bye`, `hi`.
 

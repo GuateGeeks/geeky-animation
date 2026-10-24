@@ -3,6 +3,8 @@ import {GeekyBrain, EXPRESSIONS, neutralPose} from '../src/live/brain.mjs';
 import {ACTIONS, ACTION_LIST, ALIASES, GROUPS, resolveAction} from '../src/live/actions.mjs';
 import {PATHS, GLYPHS, SPIRAL, HEART, parsePath, samplePath, capsulePath, ellipsePath, coilPoints, armGeometry, armAttach, rimRadius, reachArm, projectDepth, BASE, DEG} from '../src/live/core.mjs';
 import {STATE_META, ALIASES as V1_ALIASES} from '../src/geeky-player.mjs';
+import {GeekyActor} from '../src/live/actor.mjs';
+import {GeekyAssistant} from '../src/live/assistant.mjs';
 import '../src/live/three-renderer.mjs';
 import '../src/live/svg-renderer.mjs';
 
@@ -14,6 +16,30 @@ const finite = (v, path = 'pose') => {
   else if (v && typeof v === 'object') for (const k in v) if (typeof v[k] !== 'string') finite(v[k], `${path}.${k}`);
 };
 const run = (brain, seconds, dt = 1 / 60) => { let p; for (let i = 0; i < Math.round(seconds / dt); i++) p = brain.update(dt); return p; };
+
+// Minimal event surfaces exercise the real interaction bindings without a browser renderer.
+const pointer = (type, pointerId = 1, clientX = 10, clientY = 10) => Object.assign(new Event(type), {pointerId, clientX, clientY, button: 0});
+class TestElement extends EventTarget {
+  constructor() {
+    super(); this.style = {touchAction: '', setProperty(name, value) { this[name] = value; }}; this.captured = new Set();
+    const classes = new Set();
+    this.classList = {add: x => classes.add(x), remove: x => classes.delete(x), toggle: (x, on) => on ? classes.add(x) : classes.delete(x)};
+  }
+  setPointerCapture(id) { this.captured.add(id); }
+  hasPointerCapture(id) { return this.captured.has(id); }
+  releasePointerCapture(id) { this.captured.delete(id); this.dispatchEvent(pointer('lostpointercapture', id)); }
+  contains(el) { return el === this; }
+}
+function withBrowser(fn, {viewport = null, insets = {}} = {}) {
+  const win = new EventTarget(), doc = new EventTarget(); doc.documentElement = new EventTarget();
+  win.visualViewport = viewport;
+  const globals = {window: win, document: doc, innerWidth: 390, innerHeight: 844, scrollY: 0, visualViewport: viewport,
+    getComputedStyle: () => ({getPropertyValue: name => (insets[name.replace('--gk-safe-', '')] || 0) + 'px'})};
+  const previous = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, {value, writable: true, configurable: true});
+  try { return fn({win, doc}); }
+  finally { for (const [key, descriptor] of previous) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete globalThis[key]; } }
+}
 
 await test('classic nine states and v1 aliases carry over', () => {
   for (const id of Object.keys(STATE_META)) assert.ok(ACTIONS[id], `missing classic state ${id}`);
@@ -219,4 +245,70 @@ await test('binoculars build depth geometry that projects consistently', () => {
   assert.ok(projectDepth(0, 0, -10, 30, 0).x < 0, 'turning right swings the back of the barrels left');
 });
 
-console.log(JSON.stringify({ok: true, tests, scope: 'Node checks of the Geeky Live brain, actions and geometry; renderers are verified in a browser'}));
+await test('actor cancellation never pokes, normal gestures work, and teardown restores touch behavior', () => withBrowser(({win}) => {
+  const host = new TestElement(); host.style.touchAction = 'manipulation';
+  let pokes = 0, spins = 0, spinMoves = 0;
+  const actor = Object.assign(Object.create(GeekyActor.prototype), {
+    host, opts: {interactive: true, followPointer: false, dragMode: 'spin', reactions: false}, _ptr: null, _clicks: [], _raf: null, _timer: null,
+    listeners: new Map(), hit: () => true,
+    brain: {poke: () => pokes++, releaseSpin() {}, spinBy: () => spinMoves++},
+    renderer: {screenToChar: (x, y) => ({x, y}), destroy() {}}
+  });
+  actor.on('spin', () => spins++); actor._bind();
+  try {
+    assert.equal(host.style.touchAction, 'pan-y');
+    host.dispatchEvent(pointer('pointerdown')); win.dispatchEvent(pointer('pointercancel'));
+    assert.equal(pokes, 0); assert.equal(spins, 0); assert.equal(actor._ptr, null); assert.equal(host.captured.size, 0);
+    host.dispatchEvent(pointer('pointerdown', 2)); host.dispatchEvent(pointer('lostpointercapture', 2));
+    assert.equal(pokes, 0); assert.equal(spins, 0);
+    host.dispatchEvent(pointer('pointerdown', 3)); win.dispatchEvent(pointer('pointerup', 3)); assert.equal(pokes, 1);
+    host.dispatchEvent(pointer('pointerdown', 4)); win.dispatchEvent(pointer('pointermove', 4, 40)); win.dispatchEvent(pointer('pointerup', 4, 40));
+    assert.equal(spinMoves, 1); assert.equal(spins, 1); assert.equal(pokes, 1);
+    host.dispatchEvent(pointer('pointerdown', 5)); actor.destroy();
+    assert.equal(host.style.touchAction, 'manipulation'); assert.equal(host.captured.size, 0); assert.equal(actor._ptr, null);
+    host.dispatchEvent(pointer('pointerdown', 6)); win.dispatchEvent(pointer('pointerup', 6)); assert.equal(pokes, 1);
+  } finally { actor.destroy(); }
+}));
+
+await test('assistant cancelled drags do not poke or drop and teardown releases an active gesture', () => withBrowser(() => {
+  const hit = new TestElement(), menu = new TestElement(), balloon = new TestElement(); menu.hidden = true; balloon.hidden = true;
+  let pokes = 0, drops = 0, spins = 0, drag = true;
+  const assistant = Object.assign(Object.create(GeekyAssistant.prototype), {
+    hit, menu, balloon, state: {}, watch: {}, mode: 'sleep', floating: false, pos: {x: 0, y: 0},
+    actor: {brain: {poke: () => pokes++, releaseSpin() {}, spinBy: () => spins++}, setDrag: active => { drag = active; }, setBase() {}, renderer: {screenToChar: (x, y) => ({x, y})}},
+    _emit: type => { if (type === 'drop') drops++; }, _resolveBalloon() {}, closeMenu() {}, play() {}
+  });
+  assistant._bindPage();
+  try {
+    hit.dispatchEvent(pointer('pointerdown')); hit.dispatchEvent(pointer('pointercancel'));
+    assert.equal(pokes, 0); assert.equal(drops, 0); assert.equal(drag, false); assert.equal(hit.captured.size, 0);
+    hit.dispatchEvent(pointer('pointerdown', 2)); hit.dispatchEvent(pointer('pointermove', 2, 40)); hit.dispatchEvent(pointer('lostpointercapture', 2, 40));
+    assert.equal(spins, 1); assert.equal(pokes, 0); assert.equal(drops, 0);
+    hit.dispatchEvent(pointer('pointerdown', 3)); hit.dispatchEvent(pointer('pointerup', 3)); assert.equal(pokes, 1);
+    hit.dispatchEvent(pointer('pointerdown', 4)); assistant._unbindPage();
+    assert.equal(hit.captured.size, 0); assert.equal(drag, false);
+    hit.dispatchEvent(pointer('pointerup', 4)); assert.equal(pokes, 1);
+  } finally { assistant._unbindPage(); }
+}));
+
+await test('assistant panels and dragging stay inside the visible viewport above a mobile keyboard', () => withBrowser(() => {
+  const balloon = new TestElement(), menu = new TestElement();
+  balloon.offsetWidth = 320; balloon.offsetHeight = 180;
+  menu.offsetWidth = 250; menu.offsetHeight = 180;
+  menu.getBoundingClientRect = () => ({width: 212.5, height: 153}); // Opening scale(.85) must not affect final bounds.
+  const assistant = Object.assign(Object.create(GeekyAssistant.prototype), {
+    root: new TestElement(), balloon, menu, o: {size: 150},
+    hit: {getBoundingClientRect: () => ({left: 280, top: 590, bottom: 640})}, actor: {anchor: () => ({x: 390, y: 600})}
+  });
+  assert.deepEqual(assistant._viewportBounds(), {left: 10, top: 124, right: 380, bottom: 326});
+  assert.deepEqual(assistant._clamp(999, 999), {x: 245, y: 198.5});
+  assert.deepEqual(assistant._clamp(-999, -999), {x: -5, y: 101.5});
+  assistant._positionBalloon(); assistant._positionMenu();
+  assert.equal(balloon.style.maxHeight, '202px'); assert.equal(menu.style.maxHeight, '202px');
+  for (const panel of [balloon, menu]) {
+    const left = parseFloat(panel.style.left), top = parseFloat(panel.style.top), width = panel === balloon ? 320 : 250;
+    assert.ok(left >= 10 && left + width <= 380); assert.ok(top >= 124 && top + 180 <= 326);
+  }
+}, {viewport: {offsetLeft: 0, offsetTop: 80, width: 390, height: 280}, insets: {top: 44, bottom: 34}}));
+
+console.log(JSON.stringify({ok: true, tests, scope: 'Node checks of the Geeky Live engine, interaction bindings and viewport positioning; browser rendering is verified separately'}));

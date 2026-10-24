@@ -7,10 +7,10 @@ host.className = 'hero-live';
 art.prepend(host);
 art.querySelector('img')?.remove();
 
-const hero = createGeekyLive(host, {renderer: 'svg', dragMode: 'spin', label: 'Geeky, interactive. Click to poke, drag to spin.', zoom: .9});
+const hero = createGeekyLive(host, {renderer: 'svg', dragMode: 'spin', label: 'Geeky, interactive. Tap to poke, drag sideways to spin.', zoom: .9});
 const reel = ['waving', 'review', 'jumping', 'running', 'searching', 'love', 'bicycle', 'idea', 'celebrate', 'thinking'];
 let step = 0, lastTouch = performance.now();
-const showLabel = id => { const a = resolveAction(id); label.textContent = id === 'idle' ? 'Move your cursor. Click me.' : a.desc; };
+const showLabel = id => { const a = resolveAction(id); label.textContent = id === 'idle' ? 'Tap me. I’m curious.' : a.desc; };
 hero.on('start', ({id}) => showLabel(id));
 hero.on('poke', () => { lastTouch = performance.now(); });
 hero.on('spin', () => { lastTouch = performance.now(); });

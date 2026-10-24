@@ -6,7 +6,9 @@ A reusable, editable animation system built from the original Geeky SVG. The ori
 
 ## Geeky Live (new)
 
-A Clippy-style, highly interactive Geeky in **plain SVG** and **Three.js**, driven by one shared animation brain: 36 actions (the classic nine re-choreographed, plus assistant behaviours, feelings, fidgets and a bicycle transformation), eyebrows that appear only when an expression needs them, temple-arms, a cursor-following gaze with saccades and convergence, blinks, secondary physics, pokes, flings, hand-spins, speech balloons, a context menu, an “Ask Geeky” box, and page awareness — including *“It looks like you’re writing a letter.”*
+A Clippy-style, highly interactive Geeky in **plain SVG** and **Three.js**, driven by one shared animation brain: 50 actions (the original 36, plus 14 new GuateGeeks and technology performances inspired by the supplied Clippy reference video), eyebrows that appear only when an expression needs them, temple-arms, a cursor-following gaze with saccades and convergence, blinks, secondary physics, pokes, flings, hand-spins, speech balloons, a context menu, an “Ask Geeky” box, and page awareness — including *“It looks like you’re writing a letter.”*
+
+- New pack: [**14 technology & GuateGeeks animations**](docs/TECHNOLOGY-ANIMATIONS.md). Open the playground’s **New · 14** collection to try them; every original action is retained.
 
 - Play: [**live/index.html**](live/index.html) · API: [**docs/LIVE.md**](docs/LIVE.md) · Entry: `src/live/index.mjs`
 
@@ -75,7 +77,7 @@ Serve module examples over HTTP in development; browser module loading from file
 
 The canonical editable sources are **src/geeky-motion.mjs** and **src/geeky-player.mjs**. `statePose(state,time)` builds a pose; `character(pose)` renders it. `PATHS` contains the original contours. Change motion poses rather than redrawing the eyes. Keep pupil fills black and preserve both highlight paths.
 
-Run the lightweight player checks with `node tests/player.test.mjs`, and the Geeky Live engine checks with `node tests/live.test.mjs`.
+Run the lightweight player checks with `node tests/player.test.mjs`, and the Geeky Live engine checks with `node tests/live.test.mjs`. Run `node tests/technology.test.mjs` for the new pack and the pre-expansion choreography preservation checks.
 
 Rebuild the distributed assets from the repository root:
 

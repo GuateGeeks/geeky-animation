@@ -25,6 +25,8 @@ jobs:
         run: node tests/player.test.mjs
       - name: Test Geeky Live engine
         run: node tests/live.test.mjs
+      - name: Test additive animation pack and preservation
+        run: node tests/technology.test.mjs
       - name: Build static site
         run: python3 tools/build-pages.py
       - name: Check project-site links and artifact
