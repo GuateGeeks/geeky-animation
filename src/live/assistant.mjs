@@ -11,38 +11,42 @@ import {ACTION_LIST} from './actions.mjs';
 
 const STYLE_ID = 'geeky-assistant-style';
 const CSS = `
-.gk-root{--gk-ink:#34314f;--gk-muted:#6f6787;--gk-card:#fffdf3;--gk-line:#34314f;--gk-soft:#efeaf8;--gk-accent:#8e80bd;--gk-shadow:0 10px 30px rgba(52,49,79,.18);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--gk-ink)}
+.gk-root{--gk-ink:#34314f;--gk-muted:#6f6787;--gk-card:#fffdf3;--gk-line:#34314f;--gk-soft:#efeaf8;--gk-accent:#8e80bd;--gk-shadow:0 10px 30px rgba(52,49,79,.18);--gk-safe-top:env(safe-area-inset-top,0px);--gk-safe-right:env(safe-area-inset-right,0px);--gk-safe-bottom:env(safe-area-inset-bottom,0px);--gk-safe-left:env(safe-area-inset-left,0px);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--gk-ink)}
 @media (prefers-color-scheme:dark){.gk-root.gk-auto{--gk-ink:#f1eefb;--gk-muted:#b7aed0;--gk-card:#25223a;--gk-line:#cfc6ef;--gk-soft:#34304f;--gk-shadow:0 10px 30px rgba(0,0,0,.45)}}
 .gk-float{position:fixed;z-index:2147483000;width:var(--gk-size);height:var(--gk-size);pointer-events:none;touch-action:none}
 .gk-docked{position:absolute;inset:0;pointer-events:none}
 .gk-stage{position:absolute;inset:0;pointer-events:none}
 .gk-hit{position:absolute;left:12%;top:24%;width:76%;height:48%;border-radius:45%;pointer-events:auto;cursor:grab;outline:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+.gk-docked .gk-hit{touch-action:pan-y}
 .gk-hit:focus-visible{box-shadow:0 0 0 3px var(--gk-accent)}
 .gk-hit.gk-grabbing{cursor:grabbing}
-.gk-balloon{position:fixed;z-index:2147483001;max-width:min(300px,calc(100vw - 24px));min-width:180px;background:var(--gk-card);color:var(--gk-ink);border:1.5px solid var(--gk-line);border-radius:16px;padding:14px 16px 12px;box-shadow:var(--gk-shadow);transform-origin:var(--gk-origin,50% 100%);animation:gk-pop .22s cubic-bezier(.3,1.6,.5,1)}
+.gk-balloon{position:fixed;z-index:2147483001;display:flex;flex-direction:column;box-sizing:border-box;width:max-content;max-width:min(332px,calc(100vw - 24px));min-width:min(180px,calc(100vw - 24px));background:var(--gk-card);color:var(--gk-ink);border:1.5px solid var(--gk-line);border-radius:16px;padding:18px 16px 14px;box-shadow:var(--gk-shadow);transform-origin:var(--gk-origin,50% 100%);animation:gk-pop .22s cubic-bezier(.3,1.6,.5,1)}
+.gk-balloon-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
 .gk-balloon[hidden],.gk-menu[hidden],.gk-restore[hidden],.gk-ask[hidden],.gk-root[hidden]{display:none}
 .gk-balloon .gk-tail{position:absolute;width:14px;height:14px;background:var(--gk-card);border-right:1.5px solid var(--gk-line);border-bottom:1.5px solid var(--gk-line);transform:rotate(45deg);left:var(--gk-tail,50%);margin-left:-7px}
 .gk-balloon.gk-above .gk-tail{bottom:-8px}.gk-balloon.gk-below .gk-tail{top:-8px;transform:rotate(225deg)}
-.gk-text{margin:0 18px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
-.gk-close{position:absolute;top:6px;right:6px;width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:var(--gk-muted);font:18px/1 system-ui;cursor:pointer}
+.gk-text{min-height:22px;margin:0 30px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.gk-close{position:absolute;top:3px;right:3px;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:var(--gk-muted);font:22px/1 system-ui;cursor:pointer;touch-action:manipulation}
 .gk-close:hover{background:var(--gk-soft);color:var(--gk-ink)}
 .gk-buttons{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.gk-buttons button,.gk-ask button{font:inherit;font-size:13px;text-align:left;padding:7px 11px;border:1px solid var(--gk-line);border-radius:10px;background:transparent;color:var(--gk-ink);cursor:pointer}
+.gk-buttons button,.gk-ask button{min-height:44px;font:inherit;font-size:14px;text-align:left;padding:9px 11px;border:1px solid var(--gk-line);border-radius:10px;background:transparent;color:var(--gk-ink);cursor:pointer;touch-action:manipulation}
 .gk-buttons button::before{content:"●";color:var(--gk-accent);font-size:9px;margin-right:8px;vertical-align:2px}
 .gk-buttons button:hover,.gk-buttons button:focus-visible,.gk-ask button:hover{background:var(--gk-soft);outline:none}
 .gk-buttons button.gk-primary{background:var(--gk-ink);color:var(--gk-card)}
 .gk-ask{display:flex;gap:6px;margin-top:10px}
-.gk-ask input{flex:1;min-width:0;font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--gk-line);border-radius:10px;background:var(--gk-card);color:var(--gk-ink)}
+.gk-ask input{flex:1;min-width:0;min-height:44px;box-sizing:border-box;font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--gk-line);border-radius:10px;background:var(--gk-card);color:var(--gk-ink)}
 .gk-ask input:focus{outline:2px solid var(--gk-accent);outline-offset:1px}
-.gk-menu{position:fixed;z-index:2147483002;min-width:200px;padding:6px;background:var(--gk-card);border:1.5px solid var(--gk-line);border-radius:12px;box-shadow:var(--gk-shadow);animation:gk-pop .16s ease-out}
-.gk-menu button{display:flex;justify-content:space-between;gap:14px;width:100%;font:inherit;font-size:13px;text-align:left;padding:7px 10px;border:0;border-radius:8px;background:transparent;color:var(--gk-ink);cursor:pointer}
+.gk-menu{position:fixed;z-index:2147483002;box-sizing:border-box;min-width:min(200px,calc(100vw - 24px));padding:6px;background:var(--gk-card);border:1.5px solid var(--gk-line);border-radius:12px;box-shadow:var(--gk-shadow);animation:gk-pop .16s ease-out;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.gk-menu button{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:44px;font:inherit;font-size:14px;text-align:left;padding:9px 10px;border:0;border-radius:8px;background:transparent;color:var(--gk-ink);cursor:pointer;touch-action:manipulation}
 .gk-menu button:hover,.gk-menu button:focus{background:var(--gk-soft);outline:none}
+.gk-menu button span{min-width:0;overflow-wrap:anywhere}
 .gk-menu kbd{font:11px ui-monospace,monospace;color:var(--gk-muted)}
 .gk-menu hr{border:0;border-top:1px solid var(--gk-soft);margin:4px 2px}
-.gk-restore{position:fixed;z-index:2147483000;right:16px;bottom:16px;display:flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border:1.5px solid var(--gk-line);border-radius:999px;background:var(--gk-card);color:var(--gk-ink);font:600 12px system-ui;cursor:pointer;box-shadow:var(--gk-shadow)}
+.gk-restore{position:fixed;z-index:2147483000;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 12px 6px 8px;border:1.5px solid var(--gk-line);border-radius:999px;background:var(--gk-card);color:var(--gk-ink);font:600 12px system-ui;cursor:pointer;box-shadow:var(--gk-shadow);touch-action:manipulation}
 .gk-restore svg{width:26px;height:16px}
 .gk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @keyframes gk-pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@media (max-width:600px){.gk-balloon,.gk-menu{font-size:15px}}
 @media (prefers-reduced-motion:reduce){.gk-balloon,.gk-menu{animation:none}}
 `;
 
@@ -358,11 +362,8 @@ export class GeekyAssistant {
       menu.appendChild(b);
     }
     menu.hidden = false;
-    const r = menu.getBoundingClientRect(), a = this.hit.getBoundingClientRect();
-    const mx = x ?? a.left, my = y ?? a.top;
-    menu.style.left = Math.max(8, Math.min(innerWidth - r.width - 8, mx - r.width / 2)) + 'px';
-    menu.style.top = Math.max(8, Math.min(innerHeight - r.height - 8, my - r.height - 8)) + 'px';
-    menu.querySelector('button')?.focus();
+    this._menuAnchor = {x, y}; this._positionMenu();
+    menu.querySelector('button')?.focus({preventScroll: true});
     this.sfx.play('menu');
     this.actor.lookAt(menu);
   }
@@ -392,13 +393,14 @@ export class GeekyAssistant {
     this.balloon = mk('div', `gk-root ${theme} gk-balloon`); this.balloon.hidden = true; this.balloon.setAttribute('role', 'dialog'); this.balloon.setAttribute('aria-label', `${this.o.name} says`);
     const close = mk('button', 'gk-close', this.balloon); close.type = 'button'; close.setAttribute('aria-label', 'Close'); close.textContent = '×';
     close.addEventListener('click', () => this._resolveBalloon(null, true));
-    this.bText = mk('p', 'gk-text', this.balloon);
-    this.bAsk = mk('form', 'gk-ask', this.balloon); this.bAsk.hidden = true;
+    const content = mk('div', 'gk-balloon-content', this.balloon);
+    this.bText = mk('p', 'gk-text', content);
+    this.bAsk = mk('form', 'gk-ask', content); this.bAsk.hidden = true;
     this.bInput = mk('input', '', this.bAsk); this.bInput.setAttribute('aria-label', `Ask ${this.o.name}`); this.bInput.autocomplete = 'off';
     const go = mk('button', '', this.bAsk); go.type = 'submit'; go.textContent = 'Ask';
     this.bAsk.addEventListener('submit', e => { e.preventDefault(); const v = this.bInput.value.trim(); if (v) this._resolveBalloon(v, true); });
     this.bInput.addEventListener('input', () => { this.actor.notify('key'); if (this.actor.brain.act.id !== 'listen') this.play('listen', {loop: true}); });
-    this.bButtons = mk('div', 'gk-buttons', this.balloon);
+    this.bButtons = mk('div', 'gk-buttons', content);
     mk('div', 'gk-tail', this.balloon);
     this.menu = mk('div', `gk-root ${theme} gk-menu`); this.menu.hidden = true; this.menu.setAttribute('role', 'menu'); this.menu.setAttribute('aria-label', `${this.o.name} menu`);
     this.restore = mk('button', `gk-root ${theme} gk-restore`); this.restore.type = 'button'; this.restore.hidden = true;
@@ -456,10 +458,15 @@ export class GeekyAssistant {
 
   _positionBalloon() {
     if (this.balloon.hidden) return;
-    const b = this.balloon, a = this.actor.anchor(), r = this.hit.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
-    const above = r.top - h - 18 > 8 || r.bottom + h + 18 > innerHeight;
-    let left = Math.max(10, Math.min(innerWidth - w - 10, a.x - w * .62));
-    const top = above ? Math.max(8, Math.min(r.top, a.y + 10) - h - 14) : r.bottom + 14;
+    const b = this.balloon, v = this._viewportBounds();
+    b.style.minWidth = Math.min(180, v.right - v.left) + 'px';
+    b.style.maxWidth = Math.min(332, v.right - v.left) + 'px';
+    b.style.maxHeight = v.bottom - v.top + 'px';
+    const a = this.actor.anchor(), r = this.hit.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
+    const above = r.top - h - 18 > v.top || r.bottom + h + 18 > v.bottom;
+    const left = Math.max(v.left, Math.min(v.right - w, a.x - w * .62));
+    const desiredTop = above ? Math.min(r.top, a.y + 10) - h - 14 : r.bottom + 14;
+    const top = Math.max(v.top, Math.min(v.bottom - h, desiredTop));
     b.classList.toggle('gk-above', above); b.classList.toggle('gk-below', !above);
     b.style.left = left + 'px'; b.style.top = top + 'px';
     const tail = Math.max(18, Math.min(w - 18, a.x - left));
@@ -471,7 +478,26 @@ export class GeekyAssistant {
     this._followRaf = requestAnimationFrame(loop);
   }
 
-  _clamp(x, y) { const s = this.o.size, m = 4; return {x: Math.max(m - s * .1, Math.min(innerWidth - s * .9 - m, x)), y: Math.max(m - s * .15, Math.min(innerHeight - s * .85 - m, y))}; }
+  _viewportBounds() {
+    // The visual viewport also shrinks above a mobile keyboard.
+    const v = globalThis.visualViewport, s = getComputedStyle(this.root);
+    const inset = side => Math.max(10, parseFloat(s.getPropertyValue('--gk-safe-' + side)) || 0);
+    const x = v?.offsetLeft || 0, y = v?.offsetTop || 0;
+    return {left: x + inset('left'), top: y + inset('top'), right: x + (v?.width || innerWidth) - inset('right'), bottom: y + (v?.height || innerHeight) - inset('bottom')};
+  }
+
+  _positionMenu() {
+    if (this.menu.hidden) return;
+    const menu = this.menu, v = this._viewportBounds(), a = this.hit.getBoundingClientRect();
+    menu.style.minWidth = Math.min(200, v.right - v.left) + 'px';
+    menu.style.maxWidth = v.right - v.left + 'px'; menu.style.maxHeight = v.bottom - v.top + 'px';
+    // Layout dimensions stay stable while the opening animation scales the menu.
+    const w = menu.offsetWidth, h = menu.offsetHeight, mx = this._menuAnchor?.x ?? a.left, my = this._menuAnchor?.y ?? a.top;
+    menu.style.left = Math.max(v.left, Math.min(v.right - w, mx - w / 2)) + 'px';
+    menu.style.top = Math.max(v.top, Math.min(v.bottom - h, my - h - 8)) + 'px';
+  }
+
+  _clamp(x, y) { const s = this.o.size, v = this._viewportBounds(); return {x: Math.max(v.left - s * .1, Math.min(v.right - s * .9, x)), y: Math.max(v.top - s * .15, Math.min(v.bottom - s * .85, y))}; }
   _setPos(x, y, raw = false) { const p = raw ? {x, y} : this._clamp(x, y); this.pos = p; this.root.style.left = p.x + 'px'; this.root.style.top = p.y + 'px'; this.state.pos = {x: p.x / innerWidth, y: p.y / innerHeight}; }
   _placeFloating(x, y) {
     const s = this.o.size, m = this.o.margin, c = this.o.corner;
@@ -485,8 +511,15 @@ export class GeekyAssistant {
     this._offs = [];
     /* Pointer on Geeky: tap = poke, drag = carry with physics, long-press / right-click = menu. */
     let P = null;
+    this._offs.push(() => {
+      if (!P) return;
+      clearTimeout(P.long); const id = P.id; P = null;
+      this.hit.classList.remove('gk-grabbing');
+      if (this.hit.hasPointerCapture?.(id)) this.hit.releasePointerCapture(id);
+      this.actor.brain.releaseSpin(); this.actor.setDrag(false);
+    });
     add(this.hit, 'pointerdown', e => {
-      if (e.button === 2) return;
+      if (e.button !== 0 || P) return;
       this.hit.setPointerCapture(e.pointerId);
       P = {id: e.pointerId, x: e.clientX, y: e.clientY, ox: e.clientX - (this.pos?.x || 0), oy: e.clientY - (this.pos?.y || 0), t: performance.now(), moved: false, vx: 0, vy: 0, lx: e.clientX, ly: e.clientY, lt: performance.now()};
       P.long = setTimeout(() => { if (P && !P.moved) { P.menu = true; this.openMenu(e.clientX, e.clientY); } }, 600);
@@ -495,21 +528,23 @@ export class GeekyAssistant {
       if (!P || P.id !== e.pointerId) return;
       if (!P.moved && Math.hypot(e.clientX - P.x, e.clientY - P.y) > 6) { P.moved = true; clearTimeout(P.long); this.hit.classList.add('gk-grabbing'); this._resolveBalloon(null); this.closeMenu(); }
       if (!P.moved) return;
-      const now = performance.now(), dt = Math.max(8, now - P.lt) / 1000;
-      P.vx = (e.clientX - P.lx) / dt * .5 + P.vx * .5; P.vy = (e.clientY - P.ly) / dt * .5 + P.vy * .5; P.lx = e.clientX; P.ly = e.clientY; P.lt = now;
+      const now = performance.now(), dt = Math.max(8, now - P.lt) / 1000, dx = e.clientX - P.lx, dy = e.clientY - P.ly;
+      P.vx = dx / dt * .5 + P.vx * .5; P.vy = dy / dt * .5 + P.vy * .5; P.lx = e.clientX; P.ly = e.clientY; P.lt = now;
       if (this.floating) { this._setPos(e.clientX - P.ox, e.clientY - P.oy); this.actor.setDrag(true, P.vx, P.vy); }
-      else { this.actor.brain.spinBy(e.movementX * .7, -e.movementY * .45, dt); }
+      else { this.actor.brain.spinBy(dx * .7, -dy * .45, dt); }
     });
     const end = e => {
       if (!P || P.id !== e.pointerId) return;
       clearTimeout(P.long); this.hit.classList.remove('gk-grabbing');
       const was = P; P = null;
+      if (this.hit.hasPointerCapture?.(e.pointerId)) this.hit.releasePointerCapture(e.pointerId);
+      if (e.type === 'pointercancel' || e.type === 'lostpointercapture') { this.actor.brain.releaseSpin(); this.actor.setDrag(false); return; }
       if (was.menu) return;
       if (!was.moved) return this._tap(e);
       this.actor.brain.releaseSpin();
       if (this.floating) { this.actor.setDrag(false); this.actor.impact(Math.min(1.6, Math.hypot(was.vx, was.vy) / 900)); this._save(); this._emit('drop', {...this.pos}); if (Math.hypot(was.vx, was.vy) > 1800 && this._ready('fling', 12)) { this.play('dizzy'); if (this._chatty()) this.say('Whoa — gentle with the frames!'); } }
     };
-    add(this.hit, 'pointerup', end); add(this.hit, 'pointercancel', end);
+    add(this.hit, 'pointerup', end); add(this.hit, 'pointercancel', end); add(this.hit, 'lostpointercapture', end);
     add(this.hit, 'dblclick', e => { e.preventDefault(); this.animate(); });
     add(this.hit, 'contextmenu', e => { e.preventDefault(); this.openMenu(e.clientX, e.clientY); });
     add(this.hit, 'keydown', e => {
@@ -530,7 +565,9 @@ export class GeekyAssistant {
     });
     add(this.balloon, 'keydown', e => { if (e.key === 'Escape') { this._resolveBalloon(null, true); this.hit.focus(); } });
     add(doc, 'pointerdown', e => { if (!this.menu.hidden && !this.menu.contains(e.target)) this.closeMenu(); }, true);
-    add(win, 'resize', () => { if (this.floating && this.pos) this._setPos(this.pos.x, this.pos.y); this._positionBalloon(); });
+    const resize = () => { if (this.floating && this.pos) this._setPos(this.pos.x, this.pos.y); this._positionBalloon(); this._positionMenu(); };
+    add(win, 'resize', resize);
+    if (win.visualViewport) { add(win.visualViewport, 'resize', resize); add(win.visualViewport, 'scroll', resize); }
 
     /* Page awareness. */
     const activity = () => {

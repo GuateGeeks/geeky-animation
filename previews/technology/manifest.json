@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "title": "GuateGeeks technology and learning pack",
+  "count": 14,
+  "referenceVideo": "Clippy.mp4",
+  "runtime": "../../src/live/index.mjs",
+  "actions": [
+    {
+      "id": "tech-portal",
+      "label": "Browser portal",
+      "group": "technology",
+      "loop": false,
+      "duration": 4.8,
+      "description": "Geeky folds into a browser window, peeks through, then springs back out. Use for opening a workspace.",
+      "poster": "tech-portal-poster.svg",
+      "reference": {
+        "start": 6,
+        "end": 12
+      }
+    },
+    {
+      "id": "tech-blueprint",
+      "label": "Project blueprint",
+      "group": "technology",
+      "loop": false,
+      "duration": 5.4,
+      "description": "Unfolds a project plan, traces its circuit, and checks the first milestone. Use for GuateGeeks maker planning.",
+      "poster": "tech-blueprint-poster.svg",
+      "reference": {
+        "start": 12,
+        "end": 17.8
+      }
+    },
+    {
+      "id": "tech-debug",
+      "label": "Debug & repair",
+      "group": "technology",
+      "loop": false,
+      "duration": 5.6,
+      "description": "Finds a broken circuit, pulls out the bug, and reconnects the trace. Use for fixing a coding exercise.",
+      "poster": "tech-debug-poster.svg",
+      "reference": {
+        "start": 17.8,
+        "end": 23
+      }
+    },
+    {
+      "id": "tech-reboot",
+      "label": "Gentle reboot",
+      "group": "technology",
+      "loop": false,
+      "duration": 4.8,
+      "description": "Ducks into a power ring, restores three system lights, then bounces back ready. Use for restarting a sandbox.",
+      "poster": "tech-reboot-poster.svg",
+      "reference": {
+        "start": 23,
+        "end": 29
+      }
+    },
+    {
+      "id": "tech-peek",
+      "label": "Peek at the code",
+      "group": "technology",
+      "loop": false,
+      "duration": 5.2,
+      "description": "Peeks over a code editor, scans a few lines, then slides the panel aside. Use for reviewing a learner\u2019s project.",
+      "poster": "tech-peek-poster.svg",
+      "reference": {
+        "start": 95,
+        "end": 103.8
+      }
+    },
+    {
+      "id": "tech-compile",
+      "label": "Compile whirlwind",
+      "group": "technology",
+      "loop": false,
+      "duration": 5.8,
+      "description": "Sweeps loose code cards into a miniature compiler, then presents a working chip. Use for building a project.",
+      "poster": "tech-compile-poster.svg",
+      "reference": {
+        "start": 103.8,
+        "end": 109
+      }
+    },
+    {
+      "id": "tech-connect",
+      "label": "Connect the stack",
+      "group": "technology",
+      "loop": false,
+      "duration": 4.8,
+      "description": "Geeky uncoils two cable leads, joins their plugs and confirms a live technology connection.",
+      "poster": "tech-connect-poster.svg",
+      "reference": {
+        "start": 31,
+        "end": 41
+      }
+    },
+    {
+      "id": "tech-network",
+      "label": "Route the network",
+      "group": "technology",
+      "loop": true,
+      "duration": 5,
+      "description": "A balanced network mobile sends packets between connected nodes while Geeky follows their route.",
+      "poster": "tech-network-poster.svg",
+      "reference": {
+        "start": 52.5,
+        "end": 60
+      }
+    },
+    {
+      "id": "tech-focus",
+      "label": "Focus mode",
+      "group": "technology",
+      "loop": true,
+      "duration": 4,
+      "description": "Geeky settles into a coding session with headphones, a gentle rhythm and code-shaped audio bars.",
+      "poster": "tech-focus-poster.svg",
+      "reference": {
+        "start": 70.8,
+        "end": 79.5
+      }
+    },
+    {
+      "id": "tech-build",
+      "label": "Build a maker project",
+      "group": "technology",
+      "loop": false,
+      "duration": 5,
+      "description": "Geeky lifts a spring stack into a base, circuit layer and processor, assembling a GuateGeeks maker project.",
+      "poster": "tech-build-poster.svg",
+      "reference": {
+        "start": 84.5,
+        "end": 95
+      }
+    },
+    {
+      "id": "tech-compress",
+      "label": "Compress the archive",
+      "group": "technology",
+      "loop": false,
+      "duration": 4.6,
+      "description": "Geeky presses a stack of project files into a zipped archive, then releases it with a soft spring rebound.",
+      "poster": "tech-compress-poster.svg",
+      "reference": {
+        "start": 113.5,
+        "end": 122.2
+      }
+    },
+    {
+      "id": "tech-deploy",
+      "label": "Deploy the code",
+      "group": "technology",
+      "loop": false,
+      "duration": 5,
+      "description": "Geeky folds a code sheet into a paper plane, winds up and launches a verified deployment packet.",
+      "poster": "tech-deploy-poster.svg",
+      "reference": {
+        "start": 155.3,
+        "end": 162
+      }
+    },
+    {
+      "id": "gg-certificate",
+      "label": "GuateGeeks certificate",
+      "group": "guategeeks",
+      "loop": false,
+      "duration": 5,
+      "description": "Geeky unrolls a certificate and stamps its seal to celebrate a completed GuateGeeks technology course.",
+      "poster": "gg-certificate-poster.svg",
+      "reference": {
+        "start": 162.5,
+        "end": 166
+      }
+    },
+    {
+      "id": "gg-mentor",
+      "label": "GuateGeeks mentor",
+      "group": "guategeeks",
+      "loop": false,
+      "duration": 6,
+      "description": "Geeky reads a GuateGeeks lesson card, points through its three coding steps and checks the learner\u2019s progress.",
+      "poster": "gg-mentor-poster.svg",
+      "reference": {
+        "start": 186,
+        "end": 197.03
+      }
+    }
+  ],
+  "showcase": "showcase.mp4",
+  "showcaseIndex": "showcase-index.json"
+}

@@ -6,8 +6,11 @@
    end at rest so they blend cleanly; loops ramp in with `T` (unwrapped time). */
 import {TAU, DEG, clamp, lerp, Ease, gate, kf, wobble, wrapDeg, armGeometry, lensPoint, rimRadius, RIM_R, GROUND, EYEBALL, CONFETTI} from './core.mjs';
 
+import {registerLearningActions} from './learning-actions.mjs';
+import {registerTechnologyActions} from './technology-actions.mjs';
+
 export const ACTIONS = {};
-export const GROUPS = {classic: 'Classic nine', assistant: 'Assistant', emotion: 'Feelings', fidget: 'Idle fidgets', transform: 'Transformations'};
+export const GROUPS = {classic: 'Classic nine', assistant: 'Assistant', emotion: 'Feelings', fidget: 'Idle fidgets', transform: 'Transformations', technology: 'Technology lab · New', guategeeks: 'GuateGeeks learning · New'};
 export const ALIASES = Object.freeze({
   'flutter-right': 'running-right', 'flutter-left': 'running-left', hello: 'waving', delight: 'jumping', oops: 'failed',
   orbit: 'running', 'closer-look': 'review', knock: 'get-attention', bike: 'bicycle', binoculars: 'searching',
@@ -496,5 +499,9 @@ def('bicycle', {label: 'Bicycle', group: 'transform', dur: 2, loop: true, still:
   if (c.every(.22)) c.fx('puff', {x: -dir * 13, y: GROUND - 1.5, vx: -dir * 12, vy: -3, size: .7, grow: 1.2, life: .5, drag: 2, opacity: .7});
   if (c.at(.05)) c.cue('ring');
 }});
+
+// Additions are registered after all original performances; no old ID is replaced.
+registerLearningActions(def);
+registerTechnologyActions(def);
 
 export const ACTION_LIST = Object.values(ACTIONS).map(({id, label, group, loop, dur, desc}) => ({id, label, group, loop, duration: dur, description: desc}));

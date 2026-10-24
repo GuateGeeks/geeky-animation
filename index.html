@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Meet Geeky: a Clippy-style animated companion with 36 live actions in plain SVG and Three.js, plus nine exportable classic animations and an editable, dependency-free kit.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Meet Geeky: a Clippy-style animated companion with 50 live actions in plain SVG and Three.js, plus nine exportable classic animations and an editable, dependency-free kit.">
   <meta name="theme-color" content="#34314f">
   <title>Geeky · Animation kit</title>
   <link rel="icon" href="assets/static/Geeky.svg" type="image/svg+xml">
@@ -17,19 +17,19 @@
   </header>
   <main id="main" class="wrap">
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy"><p class="eyebrow">The matte animation kit</p><h1 id="hero-title">A little character.<br>A lot of expression.</h1><p class="lead">Meet Geeky. Original eyes, matte indigo frames, and a whole personality: it follows your cursor, reacts when you poke it, and turns into bikes, binoculars and atoms.</p><div class="actions"><a class="button primary" href="live/index.html">Play with Geeky <span aria-hidden="true">↗</span></a><a class="button" href="demo/index.html" data-geeky-tip="The classic player: nine states, sixteen gazes, frame-exact scrubbing.">Classic player</a></div><p class="fine-print">Plain SVG or Three.js · Editable vectors · Transparent exports</p></div>
+      <div class="hero-copy"><p class="eyebrow">The matte animation kit</p><h1 id="hero-title">A little character.<br>A lot of expression.</h1><p class="lead">Meet Geeky. Original eyes, matte indigo frames, and a whole personality: tap to get a reaction, try an animation, and watch it turn into bikes, binoculars and atoms.</p><div class="actions"><a class="button primary" href="live/index.html">Play with Geeky <span aria-hidden="true">↗</span></a><a class="button" href="demo/index.html" data-geeky-tip="The classic player: nine states, sixteen gazes, frame-exact scrubbing.">Classic player</a></div><p class="fine-print">Plain SVG or Three.js · Editable vectors · Transparent exports</p></div>
       <div class="hero-art" id="hero-geeky"><img src="assets/states/review/poster.svg" alt="Geeky taking a closer look" width="400" height="400"><span class="art-label" id="hero-label">A closer look.</span></div>
     </section>
-    <section class="facts" aria-label="Kit at a glance"><div><strong>36</strong><span>live actions</span></div><div><strong>2</strong><span>renderers: SVG &amp; 3-D</span></div><div><strong>9</strong><span>classic exports</span></div></section>
+    <section class="facts" aria-label="Kit at a glance"><div><strong>50</strong><span>live actions</span></div><div><strong>2</strong><span>renderers: SVG &amp; 3-D</span></div><div><strong>9</strong><span>classic exports</span></div></section>
     <section id="live" class="section" aria-labelledby="live-title">
-      <div class="section-heading"><div><p class="eyebrow">New · Geeky Live</p><h2 id="live-title">It looks like you’re building an interface.</h2></div><p>Would you like help? Geeky Live is a desktop companion in the spirit of Office’s Clippy — with better taste in eyewear.</p></div>
+      <div class="section-heading"><div><p class="eyebrow">New · Geeky Live</p><h2 id="live-title">It looks like you’re building an interface.</h2></div><p>Would you like help? Geeky Live is an interactive companion in the spirit of Office’s Clippy — with better taste in eyewear.</p></div>
       <div class="live-grid">
         <article><h3>Alive at rest</h3><p>Breathing, saccades, blinks, eyebrows and a gaze that follows your cursor. Every move anticipates, overshoots and settles.</p></article>
         <article><h3>Hands-on</h3><p>Poke it, fling it, spin it in 3-D. The frames swing, stretch and squash; five quick clicks make it dizzy.</p></article>
         <article><h3>Page-aware</h3><p>Reads along as you type, offers help with letters, notices copies, scrolling, idling and hovering <code>data-geeky-tip</code>.</p></article>
         <article><h3>Two bodies, one brain</h3><p>A retained-mode SVG renderer and a Three.js renderer share one choreography engine, so every action exists in both.</p></article>
       </div>
-      <div class="resource-strip"><div><h3>Drop it into any page.</h3><p><code>createGeekyAssistant({THREE: () =&gt; import('three')})</code> — or <code>createGeekyLive(el)</code> for a single interactive character.</p></div><div class="downloads"><a href="live/index.html">Open the playground</a><a href="docs/LIVE.md">Live API</a><a href="src/live/index.mjs" data-geeky-tip="One import gives you the actor, the assistant, the brain and both renderers.">Module entry</a></div></div>
+      <div class="resource-strip"><div><h3>Drop it into any page.</h3><p><code>createGeekyAssistant({THREE: () =&gt; import('three')})</code> — or <code>createGeekyLive(el)</code> for a single interactive character.</p></div><div class="downloads"><a href="live/index.html">Open the playground</a><a href="docs/LIVE.md">Live API</a><a href="docs/TECHNOLOGY-ANIMATIONS.md">14 new animations</a><a href="src/live/index.mjs" data-geeky-tip="One import gives you the actor, the assistant, the brain and both renderers.">Module entry</a></div></div>
     </section>
     <section id="assets" class="section" aria-labelledby="assets-title">
       <div class="section-heading"><div><p class="eyebrow">Choose an expression</p><h2 id="assets-title">Ready for your next idea.</h2></div><p>Start with a vector, an animated image, or a transparent sprite sheet. These previews are stills; open the demo to see them move.</p></div>

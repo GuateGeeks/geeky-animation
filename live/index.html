@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Geeky Live: a Clippy-style animated companion with 36 actions, physics, speech balloons and page awareness — in plain SVG and in Three.js.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Geeky Live: a GuateGeeks companion for learning and technology, with an expanding animation library, physics, speech balloons and page awareness — in SVG and Three.js.">
   <meta name="theme-color" content="#34314f">
   <title>Geeky Live · Playground</title>
   <link rel="icon" href="../assets/static/Geeky.svg" type="image/svg+xml">
@@ -18,15 +18,16 @@
 
   <main id="main" class="wrap">
     <section class="intro" aria-labelledby="title">
-      <p class="eyebrow">Your new desktop companion</p>
-      <h1 id="title">It looks like you’re<br>exploring an animation kit.</h1>
-      <p class="lead">Geeky Live is a Clippy-style companion: it follows your cursor, reacts to what you do, talks in balloons, transforms into bikes, binoculars and atoms — in plain SVG or real-time 3-D. Same brain, two bodies.</p>
+      <p class="eyebrow">A little companion. A lot of personality.</p>
+      <h1 id="title">Say hello to Geeky.</h1>
+      <p class="lead">Tap an animation, choose a mood, or start a conversation. Your curious little companion comes to life in SVG and real-time 3-D.</p>
+      <nav class="jump-links" aria-label="Playground sections"><a href="#stage-title">Playground <span aria-hidden="true">↓</span></a><a href="#lib-title">Animation library <span aria-hidden="true">↓</span></a></nav>
     </section>
 
     <div class="layout">
       <section class="card stage-card" aria-labelledby="stage-title">
         <div class="card-head">
-          <h2 id="stage-title">Stage</h2>
+          <h2 id="stage-title">The playground</h2>
           <div class="seg" role="group" aria-label="Renderer" data-geeky-tip="Flip between crisp SVG and real-time Three.js. Same brain, two bodies.">
             <button type="button" id="r-svg" aria-pressed="true">2-D · SVG</button>
             <button type="button" id="r-three" aria-pressed="false">3-D · Three.js</button>
@@ -36,25 +37,36 @@
           <div class="away" id="away" hidden><p>Geeky is out exploring the page.</p><button type="button" class="btn" id="dock-back">Bring Geeky back</button></div>
         </div>
         <div class="now" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="now">Curious</span></div>
+        <p class="action-use-case" id="action-use-case" hidden></p>
         <div class="tools">
           <button type="button" class="btn primary" id="popout" data-geeky-tip="Let me loose! I’ll float over the page like a proper assistant.">Pop out ↗</button>
           <button type="button" class="btn" id="ask">Ask Geeky…</button>
           <button type="button" class="btn" id="animate">Animate!</button>
           <button type="button" class="btn" id="stop">Stop</button>
         </div>
-        <div class="controls">
-          <label>Speed <input id="speed" type="range" min="0.25" max="2" step="0.05" value="1"><output id="speed-out">1×</output></label>
-          <label>Motion <select id="motion"><option value="system">System setting</option><option value="false">Full</option><option value="true">Reduced</option></select></label>
-          <label class="check"><input type="checkbox" id="sound"> Sound</label>
-          <label class="check"><input type="checkbox" id="follow" checked> Follow cursor</label>
-        </div>
+        <p class="control-label" id="mood-label">Set the mood <span>Swipe for more</span></p>
         <div class="moods" role="group" aria-label="Mood" id="moods"></div>
         <form class="say" id="say-form"><label class="sr" for="say">Make Geeky say something</label><input id="say" placeholder="Make Geeky say something…" autocomplete="off"><button class="btn" type="submit">Say</button></form>
+        <details class="preferences">
+          <summary>Playback settings <span>Speed, motion & sound</span></summary>
+          <div class="controls">
+            <label class="speed-control">Speed <input id="speed" type="range" min="0.25" max="2" step="0.05" value="1"><output id="speed-out" for="speed">1×</output></label>
+            <label class="motion-control">Motion <select id="motion"><option value="system">System setting</option><option value="false">Full</option><option value="true">Reduced</option></select></label>
+            <label class="check"><input type="checkbox" id="sound"> Sound</label>
+            <label class="check"><input type="checkbox" id="follow" checked> Follow pointer</label>
+          </div>
+        </details>
       </section>
 
       <section class="card library" aria-labelledby="lib-title">
-        <div class="card-head"><h2 id="lib-title">Animation library</h2><span class="count" id="count"></span></div>
-        <p class="hint">Click to play. <span aria-hidden="true">↻</span> loops until you pick another; everything else plays once and settles back to rest.</p>
+        <div class="card-head"><h2 id="lib-title">Animation library</h2><span class="count" id="count" aria-live="polite" aria-atomic="true"></span></div>
+        <p class="pack-hint"><strong>New · GuateGeeks lab</strong> Build, debug, connect, and celebrate learning with Geeky. Choose New to explore the pack.</p>
+        <div class="library-filters" role="group" aria-label="Animation collection">
+          <button type="button" data-collection="all" aria-pressed="true" aria-controls="library">All <span data-collection-count></span></button>
+          <button type="button" data-collection="new" aria-pressed="false" aria-controls="library">New <span data-collection-count></span></button>
+          <button type="button" data-collection="original" aria-pressed="false" aria-controls="library">Original <span data-collection-count></span></button>
+        </div>
+        <p class="hint">Tap to play. <span aria-hidden="true">↻</span> means it loops; choose another animation to switch.</p>
         <div id="library"></div>
       </section>
     </div>
@@ -70,7 +82,7 @@
       <h2 id="try-title">Things to try</h2>
       <ul>
         <li><strong>Drag</strong> Geeky around (pop it out first) and fling it. The frames swing, stretch and land with a squash.</li>
-        <li><strong>Click</strong> to poke, <strong>double-click</strong> for a random animation, <strong>right-click</strong> or long-press for the menu.</li>
+        <li><strong>Tap</strong> to poke, <strong>double-tap</strong> for a random animation, or <strong>long-press</strong> for the menu. A mouse works too.</li>
         <li><strong>Shake</strong> your cursor around Geeky. Or click it five times fast.</li>
         <li><strong>Type “Dear Geeky,”</strong> in GeekyWriter. You know what happens.</li>
         <li><strong>Leave it alone</strong> for half a minute: it gets bored, then falls asleep. Move to wake it.</li>
