@@ -4,6 +4,22 @@
 
 A reusable, editable animation system built from the original Geeky SVG. The original offset glasses, black pupils and two white catchlights are retained. The frames are matte dark indigo. The closer-look coil, orbital loops and flutter transformations are included.
 
+## Install
+
+Geeky is the package `@guategeeks/geeky`, versioned by release tag:
+
+```sh
+npm i github:GuateGeeks/geeky-animation#v1.1.0
+```
+
+```js
+import {createGeekyLive} from '@guategeeks/geeky';            // interactive character (SVG or Three.js)
+import {createGeekyModel} from '@guategeeks/geeky/model';      // Geeky inside your own three.js scene
+import {ACTION_LIST} from '@guategeeks/geeky/actions';         // the action catalogue
+```
+
+Entry points, embedding, the versioning contract and how to release: [docs/PACKAGE.md](docs/PACKAGE.md). Changes: [CHANGELOG.md](CHANGELOG.md).
+
 ## Geeky Live (new)
 
 A Clippy-style, highly interactive Geeky in **plain SVG** and **Three.js**, driven by one shared animation brain: 50 actions (the original 36, plus 14 new GuateGeeks and technology performances inspired by the supplied Clippy reference video), eyebrows that appear only when an expression needs them, temple-arms, a cursor-following gaze with saccades and convergence, blinks, secondary physics, pokes, flings, hand-spins, speech balloons, a context menu, an “Ask Geeky” box, and page awareness — including *“It looks like you’re writing a letter.”*
@@ -77,7 +93,7 @@ Serve module examples over HTTP in development; browser module loading from file
 
 The canonical editable sources are **src/geeky-motion.mjs** and **src/geeky-player.mjs**. `statePose(state,time)` builds a pose; `character(pose)` renders it. `PATHS` contains the original contours. Change motion poses rather than redrawing the eyes. Keep pupil fills black and preserve both highlight paths.
 
-Run the lightweight player checks with `node tests/player.test.mjs`, and the Geeky Live engine checks with `node tests/live.test.mjs`. Run `node tests/technology.test.mjs` for the new pack and the pre-expansion choreography preservation checks.
+Run every check with `npm ci && npm test` (player, Geeky Live engine, technology pack and choreography preservation, embedded model, package contract) and `npm run typecheck` for the TypeScript declarations.
 
 Rebuild the distributed assets from the repository root:
 
@@ -102,4 +118,4 @@ The mobile HTML is a WebView starting point, not a prebuilt native SDK. Test you
 
 ## Artwork and licensing
 
-This repository preserves the supplied original Geeky artwork in `assets/original/Geeky-Original.svg`. No license is currently declared in this repository. Contact the repository owner about permission to reuse the artwork or code.
+This repository preserves the supplied original Geeky artwork in `assets/original/Geeky-Original.svg`. The code and the Geeky artwork are licensed under the [Apache License 2.0](LICENSE). The vendored three.js build in `vendor/three` keeps its MIT license.

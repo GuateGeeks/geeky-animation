@@ -21,12 +21,15 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Test player
-        run: node tests/player.test.mjs
-      - name: Test Geeky Live engine
-        run: node tests/live.test.mjs
-      - name: Test additive animation pack and preservation
-        run: node tests/technology.test.mjs
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install development dependencies
+        run: npm ci
+      - name: Test player, Live engine, animation pack, model and package contract
+        run: npm test
       - name: Build static site
         run: python3 tools/build-pages.py
       - name: Check project-site links and artifact

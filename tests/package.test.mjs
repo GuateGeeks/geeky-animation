@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {test} from 'node:test';
 import {ACTION_LIST, resolveAction} from '@guategeeks/geeky/actions';
 import {snapshotApi} from '../tools/snapshot-api.mjs';
+import {checkTag, notesFor} from '../tools/release-notes.mjs';
 
 const read = async path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const json = async path => JSON.parse(await read(path));
@@ -37,4 +38,19 @@ test('every export target exists and ships, nothing heavy does', () => {
   const heavy = [...files].filter(f => /\.(gif|mp4)$|sprites|^previews\/|^_site\/|^vendor\/|^docs\/|^tests\/|^tools\/|^node_modules\//.test(f));
   assert.deepEqual(heavy, []);
   assert.ok(packed.unpackedSize < 3_000_000, `unpacked size ${packed.unpackedSize} ≥ 3 MB`);
+});
+
+test('release notes for the current version', async () => {
+  const notes = notesFor(await read('CHANGELOG.md'), pkg.version);
+  assert.ok(notes.length > 0);
+  assert.ok(!notes.includes('## ['), 'notes run into the next version');
+  assert.match(notes, /createGeekyModel/);
+  assert.throws(() => notesFor('# Changelog\n\n## [1.0.0]\n\n- x\n', '9.9.9'), /no "## \[9\.9\.9\]" section/);
+});
+
+test('checkTag rejects a mismatched tag', () => {
+  assert.throws(() => checkTag('v9.9.9', '1.1.0', '1.1.0'), /does not match/);
+  assert.throws(() => checkTag('v1.1.0', '1.1.0', '1.0.0'), /does not match/);
+  assert.throws(() => checkTag('1.1.0', '1.1.0', '1.1.0'), /vX\.Y\.Z/);
+  assert.equal(checkTag('v1.1.0', '1.1.0', '1.1.0'), '1.1.0');
 });
