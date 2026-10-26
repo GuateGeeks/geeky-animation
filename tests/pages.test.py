@@ -120,8 +120,11 @@ class PagesTests(unittest.TestCase):
     def test_workflow_guardrails(self):
         workflow = (ROOT / '.github/workflows/pages.yml').read_text()
         actions = re.findall(r'uses: (actions/[a-z-]+)@([0-9a-f]+)', workflow)
-        self.assertEqual(len(actions), 4)
+        self.assertEqual(len(actions), 5)
         self.assertTrue(all(len(sha) == 40 for _, sha in actions))
+        for other in (ROOT / '.github/workflows').glob('*.yml'):
+            for ref in re.findall(r'uses: (\S+)', other.read_text()):
+                self.assertRegex(ref, r'^actions/[a-z-]+@[0-9a-f]{40}$', f'{other.name}: pin {ref} by commit SHA')
         for line in ('permissions: {}', 'contents: read', 'pages: write', 'id-token: write',
                      'persist-credentials: false', 'enablement: false', 'needs: build',
                      'name: github-pages', 'path: _site', "if: github.ref == 'refs/heads/main'"):
