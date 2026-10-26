@@ -1,0 +1,80 @@
+{
+  "name": "@guategeeks/geeky",
+  "version": "1.1.0",
+  "description": "Geeky, the GuateGeeks character: animation brain, actions, SVG and Three.js renderers, classic player and artwork.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuateGeeks/geeky-animation.git"
+  },
+  "homepage": "https://guategeeks.github.io/geeky-animation/",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.mts",
+      "default": "./src/live/index.mjs"
+    },
+    "./actions": {
+      "types": "./types/actions.d.mts",
+      "default": "./src/live/actions.mjs"
+    },
+    "./brain": {
+      "types": "./types/brain.d.mts",
+      "default": "./src/live/brain.mjs"
+    },
+    "./core": {
+      "types": "./types/core.d.mts",
+      "default": "./src/live/core.mjs"
+    },
+    "./three": {
+      "types": "./types/three-renderer.d.mts",
+      "default": "./src/live/three-renderer.mjs"
+    },
+    "./model": {
+      "types": "./types/model.d.mts",
+      "default": "./src/live/model.mjs"
+    },
+    "./svg": {
+      "types": "./types/svg-renderer.d.mts",
+      "default": "./src/live/svg-renderer.mjs"
+    },
+    "./player": {
+      "types": "./types/geeky-player.d.mts",
+      "default": "./src/geeky-player.mjs"
+    },
+    "./motion": {
+      "types": "./types/geeky-motion.d.mts",
+      "default": "./src/geeky-motion.mjs"
+    },
+    "./manifest.json": "./manifest.json",
+    "./package.json": "./package.json",
+    "./assets/*": "./assets/*"
+  },
+  "files": [
+    "src/",
+    "types/*.d.mts",
+    "manifest.json",
+    "assets/original/",
+    "assets/static/",
+    "assets/gaze/*.svg",
+    "assets/states/*/poster.svg",
+    "assets/states/*/poster.webp",
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node tests/player.test.mjs && node tests/live.test.mjs && node --test tests/technology.test.mjs tests/model.test.mjs tests/package.test.mjs",
+    "typecheck": "tsc -p types/tsconfig.json",
+    "release:notes": "node tools/release-notes.mjs"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "three": "0.186.1",
+    "typescript": "7.0.2"
+  }
+}
