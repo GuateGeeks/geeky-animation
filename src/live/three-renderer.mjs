@@ -43,24 +43,36 @@ class Chain {
 const quad = (a, c, b, n, z = 0) => Array.from({length: n + 1}, (_, k) => { const t = k / n, u = 1 - t; return {x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: -(u * u * a.y + 2 * u * t * c.y + t * t * b.y), z}; });
 
 export class ThreeRenderer {
-  constructor(host, {THREE, frameColor = FRAME, brows = true, shadow = true, label = 'Geeky', bleed = .35, zoom = 1} = {}) {
+  /* `scene` makes the renderer headless: Geeky is built into that Object3D of a host scene, with no WebGL
+     renderer, canvas, camera or DOM of its own; the host renders it. `lights: false` leaves lighting to the
+     host. `beforeBuild(renderer)` runs after the materials exist and before the geometry is built, so an
+     embedder can share materials or swap cached geometry (see model.mjs). */
+  constructor(host, {THREE, frameColor = FRAME, brows = true, shadow = true, label = 'Geeky', bleed = .35, zoom = 1, scene = null, lights = true, beforeBuild = null} = {}) {
     if (!THREE) throw new Error('ThreeRenderer needs the THREE namespace');
     const T = this.T = THREE;
     this.kind = 'three'; this.host = host; this.frame = frameColor; this.showBrows = brows; this.showShadow = shadow; this.bleed = bleed; this.zoom = zoom;
+    this.headless = !!scene;
     this.owned = []; this.matCache = new Map(); this.geoCache = new Map(); this.props = new Map(); this.fxPool = [];
-    const gl = this.gl = new T.WebGLRenderer({antialias: true, alpha: true, powerPreference: 'low-power'});
-    gl.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
-    gl.outputColorSpace = T.SRGBColorSpace; gl.setClearColor(0x000000, 0); gl.localClippingEnabled = true;
-    const cv = this.canvas = gl.domElement;
-    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label);
-    cv.style.cssText = `position:absolute;left:${-bleed * 100}%;top:${-bleed * 100}%;width:${100 + bleed * 200}%;height:${100 + bleed * 200}%;pointer-events:none;display:block`;
-    if (getComputedStyle(host).position === 'static') { host.style.position = 'relative'; this._restorePosition = true; }
-    host.appendChild(cv);
-    this.scene = new T.Scene();
-    this.camera = new T.PerspectiveCamera(26, 1, 5, 4000);
-    this.ray = new T.Raycaster(); this.plane = new T.Plane(new T.Vector3(0, 0, 1), 0); this.tmp = new T.Vector3(); this.tmp2 = new T.Vector3();
+    this.tmp = new T.Vector3(); this.tmp2 = new T.Vector3();
+    if (this.headless) { this.gl = null; this.scene = scene; }
+    else {
+      const gl = this.gl = new T.WebGLRenderer({antialias: true, alpha: true, powerPreference: 'low-power'});
+      gl.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
+      gl.outputColorSpace = T.SRGBColorSpace; gl.setClearColor(0x000000, 0); gl.localClippingEnabled = true;
+      const cv = this.canvas = gl.domElement;
+      cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label);
+      cv.style.cssText = `position:absolute;left:${-bleed * 100}%;top:${-bleed * 100}%;width:${100 + bleed * 200}%;height:${100 + bleed * 200}%;pointer-events:none;display:block`;
+      if (getComputedStyle(host).position === 'static') { host.style.position = 'relative'; this._restorePosition = true; }
+      host.appendChild(cv);
+      this.scene = new T.Scene();
+      this.camera = new T.PerspectiveCamera(26, 1, 5, 4000);
+      this.ray = new T.Raycaster(); this.plane = new T.Plane(new T.Vector3(0, 0, 1), 0);
+    }
     this.unit = {cyl: this._own(new T.CylinderGeometry(1, 1, 1, 14, 1, true)), sph: this._own(new T.SphereGeometry(1, 14, 10))};
-    this._lights(); this._materials(); this._build();
+    if (lights) this._lights();
+    this._materials();
+    beforeBuild?.(this);
+    this._build();
     this.resize();
   }
 
@@ -152,14 +164,16 @@ export class ThreeRenderer {
 
   _build() {
     const T = this.T, root = this.root = new T.Group(); this.scene.add(root);
-    // Soft contact shadow.
-    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
-    const cx = cv.getContext('2d'), gr = cx.createRadialGradient(64, 64, 4, 64, 64, 64);
-    gr.addColorStop(0, 'rgba(52,49,79,.55)'); gr.addColorStop(.55, 'rgba(52,49,79,.18)'); gr.addColorStop(1, 'rgba(52,49,79,0)');
-    cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
-    const tex = this._own(new T.CanvasTexture(cv));
-    this.shadow = new T.Mesh(this._own(new T.PlaneGeometry(1, 1)), this._own(new T.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false})));
-    this.shadow.rotation.x = -Math.PI / 2; this.shadow.position.y = -(GROUND + .6); root.add(this.shadow);
+    // Soft contact shadow (a canvas texture, so only when it can show).
+    if (this.showShadow) {
+      const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+      const cx = cv.getContext('2d'), gr = cx.createRadialGradient(64, 64, 4, 64, 64, 64);
+      gr.addColorStop(0, 'rgba(52,49,79,.55)'); gr.addColorStop(.55, 'rgba(52,49,79,.18)'); gr.addColorStop(1, 'rgba(52,49,79,0)');
+      cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+      const tex = this._own(new T.CanvasTexture(cv));
+      this.shadow = new T.Mesh(this._own(new T.PlaneGeometry(1, 1)), this._own(new T.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false})));
+      this.shadow.rotation.x = -Math.PI / 2; this.shadow.position.y = -(GROUND + .6); root.add(this.shadow);
+    } else this.shadow = {visible: false, position: {x: 0}, scale: {set() {}}, material: {opacity: 0}};
 
     const body = this.body = new T.Group(); root.add(body);
     this.lenses = [0, 1].map(i => {
@@ -267,7 +281,7 @@ export class ThreeRenderer {
     this._fx(fx);
     this.scene.updateMatrixWorld();
     for (const e of this.eyes) e.clip.set(this.tmp.set(0, 0, 1), -EYE_CLIP).applyMatrix4(e.ball.matrixWorld);
-    this.gl.render(this.scene, this.camera);
+    this.gl?.render(this.scene, this.camera);
   }
 
   _eye(e, q, L, i) {
@@ -389,8 +403,9 @@ export class ThreeRenderer {
   }
 
   setZoom(z) { this.zoom = z; this.resize(); }
-  setLabel(text) { this.canvas.setAttribute('aria-label', text); }
+  setLabel(text) { this.canvas?.setAttribute('aria-label', text); }
   resize() {
+    if (this.headless) return;
     const w = Math.max(1, this.host.clientWidth), h = Math.max(1, this.host.clientHeight), f = 1 + this.bleed * 2;
     this.gl.setSize(Math.round(w * f), Math.round(h * f), false);
     const aspect = w / h, H = 64 / this.zoom * f / Math.min(1, aspect), D = H / (2 * Math.tan(13 * DEG));
@@ -398,13 +413,16 @@ export class ThreeRenderer {
     this.camera.near = Math.max(1, D - 140); this.camera.far = D + 240;
     this.camera.aspect = aspect; this.camera.position.set(0, D * .085, D); this.camera.lookAt(0, -1.5, 0); this.camera.updateProjectionMatrix();
   }
+  /* Screen mapping needs the renderer's own camera and canvas; headless, the host owns both. */
   screenToChar(x, y) {
+    if (this.headless) return {x: 0, y: 0};
     const r = this.canvas.getBoundingClientRect();
     this.ray.setFromCamera(new this.T.Vector2((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height * 2 - 1)), this.camera);
     const hit = this.ray.ray.intersectPlane(this.plane, this.tmp);
     return hit ? {x: hit.x, y: -hit.y} : {x: 0, y: 0};
   }
   charToScreen(x, y) {
+    if (this.headless) return {x: 0, y: 0};
     const r = this.canvas.getBoundingClientRect(), v = this.tmp.set(x, -y, 0).project(this.camera);
     return {x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height};
   }
@@ -413,6 +431,7 @@ export class ThreeRenderer {
     for (const rec of this.props.values()) this._dropProp(rec);
     this.fxPool.forEach(g => this._dropGlyph(g));
     this.owned.forEach(x => x.dispose?.());
+    if (this.headless) { this.root.removeFromParent(); return; }
     this.gl.dispose(); this.canvas.remove();
     if (this._restorePosition) this.host.style.position = '';
   }

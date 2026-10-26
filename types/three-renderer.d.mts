@@ -10,15 +10,24 @@ export interface ThreeRendererOptions {
   bleed?: number;
   zoom?: number;
   label?: string;
+  /** Headless: build into this Object3D of a host scene; no WebGL renderer, canvas, camera or DOM of its own. */
+  scene?: THREE.Object3D;
+  /** Add the renderer's own lights (default true). */
+  lights?: boolean;
+  /** Runs after the materials exist and before the geometry is built. */
+  beforeBuild?: (renderer: ThreeRenderer) => void;
 }
 export class ThreeRenderer {
-  constructor(host: HTMLElement, options: ThreeRendererOptions);
+  /** `host` may be null when `scene` is given. */
+  constructor(host: HTMLElement | null, options: ThreeRendererOptions);
+  headless: boolean;
   kind: 'three';
   frame: string;
   zoom: number;
   canvas: HTMLCanvasElement;
-  gl: THREE.WebGLRenderer;
-  scene: THREE.Scene;
+  /** Null when headless. */
+  gl: THREE.WebGLRenderer | null;
+  scene: THREE.Object3D;
   camera: THREE.PerspectiveCamera;
   render(pose: GeekyPose, effects?: unknown[]): void;
   setZoom(zoom: number): void;
