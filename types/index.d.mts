@@ -22,7 +22,12 @@ export interface GeekyLiveOptions {
   autonomous?: boolean;
   brows?: boolean | 'auto' | 'always';
   shadow?: boolean;
-  label?: string;
+  /** Accessible name; null makes Geeky decorative (aria-hidden). */
+  label?: string | null;
+  /** Append the current action's label to `label` on each action (default true). */
+  actionLabels?: boolean;
+  /** Frame colour (hex); change it later with setFrameColor. */
+  frameColor?: string;
   seed?: number;
   zoom?: number;
 }
@@ -38,7 +43,14 @@ export class GeekyActor {
   poke(x?: number, y?: number): this;
   lookAt(target: Element | { x: number; y: number } | null): this;
   angleTo(target: Element | { x: number; y: number }): number;
-  setRenderer(kind: 'svg' | 'three', options?: { THREE?: ThreeSource }): Promise<this>;
+  setRenderer(kind: 'svg' | 'three', options?: { THREE?: typeof THREE | Record<string, any> }): this;
+  /** Like setRenderer, but THREE may be a loader; a failed load keeps the current body and emits 'renderer' with `error`. */
+  loadRenderer(kind: 'svg' | 'three', options?: { THREE?: ThreeSource }): Promise<this>;
+  /** Recolours the frame; the current action carries on. */
+  setFrameColor(hex: string): this;
+  /** Idle fidgets on or off. */
+  setAutonomous(on: boolean): this;
+  readonly rendererKind: 'svg' | 'three' | undefined;
   setZoom(zoom: number): this;
   setSpeed(rate: number): this;
   pause(): this;

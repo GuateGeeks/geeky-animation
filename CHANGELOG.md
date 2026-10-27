@@ -2,6 +2,20 @@
 
 All notable changes to `@guategeeks/geeky` (GuateGeeks/geeky-animation). Versions follow [semver](https://semver.org) with the contract in [docs/PACKAGE.md](docs/PACKAGE.md): removing or renaming an export or an action id is major, adding one is minor, motion and geometry tweaks are patch.
 
+## [1.2.0] - 2026-10-26
+
+### Added
+
+- Live actor (`createGeekyLive`, `GeekyActor`) for embedding in product screens:
+  - `setFrameColor(hex)` recolours the frame live (theme or colour-scheme changes) while the current action carries on; `frameColor` is now in the option types.
+  - `actionLabels: false` keeps the accessible name exactly as given instead of appending the action's (English) label; `label: null` makes Geeky decorative (`aria-hidden`, no role or name), also on `SvgRenderer` and `ThreeRenderer`.
+  - `loadRenderer(kind, {THREE})` accepts a loader such as `() => import('three')`; `renderer: 'three'` with a loader starts in SVG and switches when three.js arrives, keeping SVG (and emitting `renderer` with `error`) if it cannot.
+  - `setAutonomous(on)` turns idle fidgets on or off.
+
+### Fixed
+
+- `GeekyActor#setRenderer` is typed as returning the actor (it never returned a Promise).
+
 ## [1.1.0] - 2026-10-26
 
 ### Added

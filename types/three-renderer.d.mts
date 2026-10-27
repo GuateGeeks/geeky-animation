@@ -9,7 +9,8 @@ export interface ThreeRendererOptions {
   shadow?: boolean;
   bleed?: number;
   zoom?: number;
-  label?: string;
+  /** Accessible name; null makes the canvas decorative (aria-hidden). */
+  label?: string | null;
   /** Headless: build into this Object3D of a host scene; no WebGL renderer, canvas, camera or DOM of its own. */
   scene?: THREE.Object3D;
   /** Add the renderer's own lights (default true). */

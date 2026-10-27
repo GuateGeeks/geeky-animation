@@ -1,6 +1,6 @@
 import type { GeekyPose } from './brain.mjs';
 export class SvgRenderer {
-  constructor(host: HTMLElement, options?: { frameColor?: string; brows?: boolean; shadow?: boolean; zoom?: number; label?: string; bleed?: number });
+  constructor(host: HTMLElement, options?: { frameColor?: string; brows?: boolean; shadow?: boolean; zoom?: number; label?: string | null; bleed?: number });
   kind: 'svg';
   frame: string;
   svg: SVGSVGElement;

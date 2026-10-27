@@ -43,3 +43,8 @@ model.group.add(new THREE.Group());
 model.materials()[0].roughness satisfies number;
 MODEL_THREE_KEYS satisfies readonly string[];
 new ThreeRenderer(null, {THREE, scene: new THREE.Group(), lights: false}).headless satisfies boolean;
+
+const live = createGeekyLive(host, {renderer: 'three', THREE: () => import('three'), label: null, actionLabels: false, frameColor: '#ff8800', autonomous: false});
+live.setFrameColor('#123456').setAutonomous(true);
+live.loadRenderer('svg').then(a => a.rendererKind satisfies 'svg' | 'three' | undefined);
+new SvgRenderer(host, {label: null});

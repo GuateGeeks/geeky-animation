@@ -113,9 +113,10 @@ Props are renderer-neutral: `ring` (tilted orbit), `line` (stroke, optionally wi
 | reducedMotion | `'system'` | `'system'`, `true` or `false` |
 | zoom | 1 | 1 frames a 64-unit stage; smaller values leave more room |
 | brows | `'auto'` | `'auto'` shows brows only while an expression uses them; `'always'` or `true` keeps them; `false` removes them |
-| frameColor, shadow, label, seed | | Appearance, accessible name and deterministic randomness |
+| frameColor, shadow, label, seed | | Appearance, accessible name and deterministic randomness. `label: null` makes Geeky decorative (`aria-hidden`); change the frame later with `setFrameColor(hex)` |
+| actionLabels | `true` | Append the current action's label to `label` (`"Geeky: Celebrate"`); `false` keeps `label` exactly as given |
 
-Methods: `play(id, {loop, params, blend, then, restart})` → Promise, `stop()`, `animate()` (random crowd-pleaser), `setMood(name)`, `setBase(id)`, `lookAt(element | {x, y} | 'user' | null)`, `angleTo(element | point)`, `notify(signal)`, `poke(x?, y?)`, `setDrag(active, vxPx, vyPx)`, `impact(speed)`, `hit(clientX, clientY)`, `anchor()`, `setRenderer(kind, {THREE})`, `setZoom(z)`, `setSpeed(0.1–4)`, `pause()`, `resume()`, `setReducedMotion(v)`, `setFollowPointer(bool)`, `getState()`, `toSVG()` (SVG renderer), `on(event, fn)` → unsubscribe, `destroy()`.
+Methods: `play(id, {loop, params, blend, then, restart})` → Promise, `stop()`, `animate()` (random crowd-pleaser), `setMood(name)`, `setBase(id)`, `lookAt(element | {x, y} | 'user' | null)`, `angleTo(element | point)`, `notify(signal)`, `poke(x?, y?)`, `setDrag(active, vxPx, vyPx)`, `impact(speed)`, `hit(clientX, clientY)`, `anchor()`, `setRenderer(kind, {THREE})`, `loadRenderer(kind, {THREE})` → Promise (THREE may be a loader such as `() => import('three')`; a failed load keeps the current body and emits `renderer` with `error`), `setFrameColor(hex)`, `setAutonomous(bool)` (idle fidgets), `setZoom(z)`, `setSpeed(0.1–4)`, `pause()`, `resume()`, `setReducedMotion(v)`, `setFollowPointer(bool)`, `getState()`, `toSVG()` (SVG renderer), `on(event, fn)` → unsubscribe, `destroy()`.
 
 Events: `start`, `end`, `cue` (sound or sync points such as `jump`, `land`, `tap` and `ding`), `poke`, `dblclick`, `hover`, `spin`, `renderer`.
 

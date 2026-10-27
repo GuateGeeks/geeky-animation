@@ -60,7 +60,8 @@ export class ThreeRenderer {
       gl.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
       gl.outputColorSpace = T.SRGBColorSpace; gl.setClearColor(0x000000, 0); gl.localClippingEnabled = true;
       const cv = this.canvas = gl.domElement;
-      cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label);
+      if (label === null) cv.setAttribute('aria-hidden', 'true'); // decorative
+      else { cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label); }
       cv.style.cssText = `position:absolute;left:${-bleed * 100}%;top:${-bleed * 100}%;width:${100 + bleed * 200}%;height:${100 + bleed * 200}%;pointer-events:none;display:block`;
       if (getComputedStyle(host).position === 'static') { host.style.position = 'relative'; this._restorePosition = true; }
       host.appendChild(cv);
