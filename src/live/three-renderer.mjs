@@ -403,6 +403,12 @@ export class ThreeRenderer {
     for (; i < this.fxPool.length; i++) this.fxPool[i].visible = false;
   }
 
+  /** Recolour every frame-coloured material in place (no rebuild, no new context). */
+  setFrameColor(hex) {
+    this.frame = hex;
+    this.mat.frame.color.set(hex);
+    for (const e of this.eyes) { e.lidT.children[0].material.color.set(hex); e.outlineMat.color?.set(hex); }
+  }
   setZoom(z) { this.zoom = z; this.resize(); }
   setLabel(text) { this.canvas?.setAttribute('aria-label', text); }
   resize() {
@@ -433,7 +439,8 @@ export class ThreeRenderer {
     this.fxPool.forEach(g => this._dropGlyph(g));
     this.owned.forEach(x => x.dispose?.());
     if (this.headless) { this.root.removeFromParent(); return; }
-    this.gl.dispose(); this.canvas.remove();
+    // dispose() frees resources but keeps the context alive until GC; browsers cap live contexts (~16).
+    this.gl.dispose(); this.gl.forceContextLoss?.(); this.canvas.remove();
     if (this._restorePosition) this.host.style.position = '';
   }
 }

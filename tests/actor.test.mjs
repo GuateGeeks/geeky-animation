@@ -90,3 +90,24 @@ test('SvgRenderer with a null label is decorative', () => {
     assert.equal(named.svg.attrs.role, 'img');
   } finally { globalThis.document = previous; }
 });
+
+test('setFrameColor recolours in place when the renderer can (no new WebGL context)', () => {
+  const {actor, mounts} = stubActor();
+  const recoloured = [];
+  actor.renderer = {kind: 'three', destroy() { throw new Error('must not remount'); }, setFrameColor: hex => recoloured.push(hex)};
+  actor.setFrameColor('#00ff00');
+  assert.deepEqual(recoloured, ['#00ff00']);
+  assert.deepEqual(mounts, []);
+});
+
+test('setFrameColor falls back to SVG when the remount fails', () => {
+  const {actor} = stubActor();
+  const events = [];
+  actor.on('renderer', d => events.push(d));
+  actor.renderer = {kind: 'three', destroy() {}};
+  actor._mount = kind => { if (kind === 'three') throw new Error('no context'); actor.renderer = {kind, destroy() {}}; };
+  actor.setFrameColor('#123456');
+  assert.equal(actor.renderer.kind, 'svg');
+  assert.equal(events.length, 1);
+  assert.match(events[0].error.message, /no context/);
+});

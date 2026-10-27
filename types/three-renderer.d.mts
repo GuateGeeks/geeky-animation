@@ -31,6 +31,8 @@ export class ThreeRenderer {
   scene: THREE.Object3D;
   camera: THREE.PerspectiveCamera;
   render(pose: GeekyPose, effects?: unknown[]): void;
+  /** Recolours the frame materials in place (windowed and headless renderers; not createGeekyModel's). */
+  setFrameColor(hex: string): void;
   setZoom(zoom: number): void;
   setLabel(text: string): void;
   resize(): void;

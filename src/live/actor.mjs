@@ -83,14 +83,20 @@ export class GeekyActor {
     }
     return this;
   }
-  /** Recolour the frame (rims, bridge, arms, brows): remounts the current body; the brain and its action carry on. */
+  /** Recolour the frame (rims, bridge, arms, brows); the brain and its action carry on. The 3-D body recolours its
+      materials in place (no new WebGL context); the SVG body is rebuilt. A failed rebuild falls back to SVG. */
   setFrameColor(hex) {
     this._assert();
     if (this.opts.frameColor === hex) return this;
     this.opts.frameColor = hex;
+    if (this.renderer?.setFrameColor) { this.renderer.setFrameColor(hex); this._kick(); return this; }
     const kind = this.renderer?.kind ?? 'svg';
     this.renderer?.destroy(); this.renderer = null;
-    this._mount(kind); this._kick();
+    try { this._mount(kind); } catch (error) {
+      this._mount('svg');
+      this._emit('renderer', {kind: 'svg', error});
+    }
+    this._kick();
     return this;
   }
   /** Idle fidgets on or off (look-around, yawn, polish… while resting). */
