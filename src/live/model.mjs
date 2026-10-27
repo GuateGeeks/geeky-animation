@@ -224,6 +224,8 @@ export function createGeekyModel({THREE, seed = 7, reduced = false, palette = {}
     beforeBuild: r => prepare(r, shared, pal, D)
   });
   finish(renderer, shared, pal, D);
+  // Frame colours live in vertex colours of shared materials here: recolouring needs a new model.
+  renderer.setFrameColor = () => { throw new Error('createGeekyModel: the palette is fixed at creation; dispose the model and create it again'); };
   lighten(renderer, shared, D);
   // The pose code computes each eye's world-space lid plane at the end of render(); copy it to that eye's lid geometries.
   const draw = renderer.render.bind(renderer);

@@ -44,7 +44,7 @@ test('release notes for the current version', async () => {
   const notes = notesFor(await read('CHANGELOG.md'), pkg.version);
   assert.ok(notes.length > 0);
   assert.ok(!notes.includes('## ['), 'notes run into the next version');
-  assert.match(notes, /createGeekyModel/);
+  assert.match(notes, /^### (Added|Changed|Fixed|Removed)/m);
   assert.throws(() => notesFor('# Changelog\n\n## [1.0.0]\n\n- x\n', '9.9.9'), /no "## \[9\.9\.9\]" section/);
 });
 

@@ -87,3 +87,32 @@ test('dispose is idempotent and detaches the group', () => {
 test('windowed ThreeRenderer still needs a browser', () => {
   assert.throws(() => new ThreeRenderer(null, {THREE}));
 });
+
+test('ThreeRenderer.setFrameColor recolours the frame materials in place', () => {
+  const r = new ThreeRenderer(null, {THREE, scene: new THREE.Group(), lights: false, shadow: false});
+  const frameMat = r.mat.frame;
+  r.setFrameColor('#ff0000');
+  assert.equal(r.frame, '#ff0000');
+  assert.equal(r.mat.frame, frameMat, 'same material, recoloured');
+  assert.equal(r.mat.frame.color.getHexString(), 'ff0000');
+  assert.equal(r.eyes[0].lidT.children[0].material.color.getHexString(), 'ff0000', 'lid crease');
+  assert.equal(r.eyes[0].outlineMat.color.getHexString(), 'ff0000', 'eye outline');
+  r.destroy();
+});
+
+test('ThreeRenderer.destroy releases its WebGL context', () => {
+  let lost = 0, disposed = 0;
+  const r = Object.assign(Object.create(ThreeRenderer.prototype), {
+    headless: false, props: new Map(), fxPool: [], owned: [], host: {style: {}},
+    gl: {dispose: () => disposed++, forceContextLoss: () => lost++}, canvas: {remove() {}}
+  });
+  r.destroy();
+  assert.equal(disposed, 1);
+  assert.equal(lost, 1);
+});
+
+test('the model keeps its palette fixed: renderer.setFrameColor explains how to change it', () => {
+  const model = createGeekyModel({THREE, reduced: true});
+  assert.throws(() => model.renderer.setFrameColor('#ff0000'), /palette is fixed at creation/);
+  model.dispose();
+});

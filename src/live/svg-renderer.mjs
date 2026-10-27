@@ -36,7 +36,9 @@ export class SvgRenderer {
 
   _build(label) {
     const F = this.frame, id = this.prefix;
-    const svg = this.svg = el('svg', {xmlns: NS, viewBox: this._viewBox(), width: '100%', height: '100%', role: 'img', 'aria-label': label, overflow: 'visible', preserveAspectRatio: 'xMidYMid meet'});
+    // A null label makes Geeky decorative: hidden from assistive technology.
+    const name = label === null ? {'aria-hidden': 'true'} : {role: 'img', 'aria-label': label};
+    const svg = this.svg = el('svg', {xmlns: NS, viewBox: this._viewBox(), width: '100%', height: '100%', ...name, overflow: 'visible', preserveAspectRatio: 'xMidYMid meet'});
     svg.style.cssText = 'display:block;overflow:visible;touch-action:none';
     const defs = el('defs', {}, svg);
     for (let i = 0; i < 2; i++) el('path', {d: PATHS[i * 2 + 1]}, el('clipPath', {id: `${id}eye${i}`}, defs));

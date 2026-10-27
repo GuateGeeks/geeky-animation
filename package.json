@@ -1,6 +1,6 @@
 {
   "name": "@guategeeks/geeky",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Geeky, the GuateGeeks character: animation brain, actions, SVG and Three.js renderers, classic player and artwork.",
   "license": "Apache-2.0",
   "repository": {
@@ -68,7 +68,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node tests/player.test.mjs && node tests/live.test.mjs && node --test tests/technology.test.mjs tests/model.test.mjs tests/package.test.mjs",
+    "test": "node tests/player.test.mjs && node tests/live.test.mjs && node --test tests/technology.test.mjs tests/model.test.mjs tests/actor.test.mjs tests/package.test.mjs",
     "typecheck": "tsc -p types/tsconfig.json",
     "release:notes": "node tools/release-notes.mjs"
   },

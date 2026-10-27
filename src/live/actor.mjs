@@ -25,12 +25,15 @@ export class GeekyActor {
     this._clicks = []; this._lookEl = null; this._ptr = null;
     this._media = typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia('(prefers-reduced-motion: reduce)') : null;
     this._applyReduced();
-    this._mount(this.opts.renderer);
+    // A THREE loader function (e.g. () => import('three')) starts in SVG and switches once it resolves.
+    const lazyThree = this.opts.renderer === 'three' && typeof this.opts.THREE === 'function';
+    this._mount(lazyThree ? 'svg' : this.opts.renderer);
     this._bind();
     this.brain.on('cue', d => this._emit('cue', d));
-    this.brain.on('start', d => { this.renderer?.setLabel?.(`${this.opts.label}: ${resolveAction(d.id).label}`); this._emit('start', d); this._kick(); });
+    this.brain.on('start', d => this._onStart(d));
     this.brain.on('end', d => this._emit('end', d));
     this._schedule();
+    if (lazyThree) this.loadRenderer('three');
   }
 
   /* ---------- public API ---------- */
@@ -68,6 +71,36 @@ export class GeekyActor {
     try { this._mount(kind); } catch (e) { this._mount(prev && prev !== kind ? prev : 'svg'); this._kick(); throw e; }
     this._kick(); this._emit('renderer', {kind}); return this;
   }
+  /** Like setRenderer, but THREE may be a loader function; a failed load keeps the current body and emits 'renderer' with the error. */
+  async loadRenderer(kind, {THREE} = {}) {
+    this._assert();
+    try {
+      let ns = THREE ?? this.opts.THREE;
+      if (typeof ns === 'function') ns = await ns();
+      if (!this._destroyed) this.setRenderer(kind, {THREE: ns});
+    } catch (error) {
+      if (!this._destroyed) this._emit('renderer', {kind: this.renderer?.kind ?? 'svg', error});
+    }
+    return this;
+  }
+  /** Recolour the frame (rims, bridge, arms, brows); the brain and its action carry on. The 3-D body recolours its
+      materials in place (no new WebGL context); the SVG body is rebuilt. A failed rebuild falls back to SVG. */
+  setFrameColor(hex) {
+    this._assert();
+    if (this.opts.frameColor === hex) return this;
+    this.opts.frameColor = hex;
+    if (this.renderer?.setFrameColor) { this.renderer.setFrameColor(hex); this._kick(); return this; }
+    const kind = this.renderer?.kind ?? 'svg';
+    this.renderer?.destroy(); this.renderer = null;
+    try { this._mount(kind); } catch (error) {
+      this._mount('svg');
+      this._emit('renderer', {kind: 'svg', error});
+    }
+    this._kick();
+    return this;
+  }
+  /** Idle fidgets on or off (look-around, yawn, polish… while resting). */
+  setAutonomous(on) { this.brain.autonomous = !!on; return this; }
   get rendererKind() { return this.renderer?.kind; }
   setZoom(z) { this.opts.zoom = clamp(Number(z) || 1, .3, 3); this.renderer.setZoom(this.opts.zoom); this._kick(); return this; }
   setSpeed(rate) { this.brain.speed = clamp(Number(rate) || 1, .1, 4); return this; }
@@ -97,6 +130,12 @@ export class GeekyActor {
   /* ---------- internals ---------- */
 
   _assert() { if (this._destroyed) throw new Error('This Geeky Live actor has been destroyed'); }
+  /** Accessible name on each action: `label` alone with actionLabels:false, nothing when label is null (decorative). */
+  _onStart(d) {
+    const label = this.opts.label;
+    if (label !== null) this.renderer?.setLabel?.(this.opts.actionLabels === false ? label : `${label}: ${resolveAction(d.id).label}`);
+    this._emit('start', d); this._kick();
+  }
   _emit(type, data) { this.listeners.get(type)?.forEach(fn => { try { fn(data); } catch (e) { console.error(e); } }); }
 
   _mount(kind) {

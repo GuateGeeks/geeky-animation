@@ -60,7 +60,8 @@ export class ThreeRenderer {
       gl.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
       gl.outputColorSpace = T.SRGBColorSpace; gl.setClearColor(0x000000, 0); gl.localClippingEnabled = true;
       const cv = this.canvas = gl.domElement;
-      cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label);
+      if (label === null) cv.setAttribute('aria-hidden', 'true'); // decorative
+      else { cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label); }
       cv.style.cssText = `position:absolute;left:${-bleed * 100}%;top:${-bleed * 100}%;width:${100 + bleed * 200}%;height:${100 + bleed * 200}%;pointer-events:none;display:block`;
       if (getComputedStyle(host).position === 'static') { host.style.position = 'relative'; this._restorePosition = true; }
       host.appendChild(cv);
@@ -402,6 +403,12 @@ export class ThreeRenderer {
     for (; i < this.fxPool.length; i++) this.fxPool[i].visible = false;
   }
 
+  /** Recolour every frame-coloured material in place (no rebuild, no new context). */
+  setFrameColor(hex) {
+    this.frame = hex;
+    this.mat.frame.color.set(hex);
+    for (const e of this.eyes) { e.lidT.children[0].material.color.set(hex); e.outlineMat.color?.set(hex); }
+  }
   setZoom(z) { this.zoom = z; this.resize(); }
   setLabel(text) { this.canvas?.setAttribute('aria-label', text); }
   resize() {
@@ -432,7 +439,8 @@ export class ThreeRenderer {
     this.fxPool.forEach(g => this._dropGlyph(g));
     this.owned.forEach(x => x.dispose?.());
     if (this.headless) { this.root.removeFromParent(); return; }
-    this.gl.dispose(); this.canvas.remove();
+    // dispose() frees resources but keeps the context alive until GC; browsers cap live contexts (~16).
+    this.gl.dispose(); this.gl.forceContextLoss?.(); this.canvas.remove();
     if (this._restorePosition) this.host.style.position = '';
   }
 }
